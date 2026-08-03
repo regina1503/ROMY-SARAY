@@ -10,7 +10,6 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <!-- Firebase: guarda las confirmaciones en la nube (Firestore) para que se
      sincronicen entre todos los dispositivos, en vez de quedarse aisladas
@@ -263,9 +262,9 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font-b);min-heig
           <div class="pass-info-grid">
             <div><p class="pass-label">Pases confirmados</p><p class="pass-value" id="pass-qty">—</p></div>
           </div>
-          <button type="button" id="pass-download-btn" class="btn-main" style="background:var(--sage-dark);margin-top:1rem" onclick="downloadPass()">
-            <i class="ti ti-download"></i> Descargar pase completo
-          </button>
+          <p style="font-size:12px;color:var(--sage-dark);font-weight:600;margin-top:1rem;display:flex;align-items:center;justify-content:center;gap:6px">
+            <i class="ti ti-camera"></i> Toma una captura de pantalla de este pase
+          </p>
         </div>
         <div class="pass-divider"><span class="pass-notch left"></span><span class="pass-dashes"></span><span class="pass-notch right"></span></div>
         <div class="pass-bottom">
@@ -758,36 +757,6 @@ function showResult(entry){
     details.innerHTML = '';
     passTicket.classList.add('hidden');
   }
-}
-
-function downloadPass(){
-  const passEl = document.getElementById('pass-ticket');
-  const downloadBtn = document.getElementById('pass-download-btn');
-
-  if(typeof html2canvas === 'undefined'){
-    showToast('No se pudo generar la imagen, intenta de nuevo','ti-alert-triangle');
-    return;
-  }
-
-  // El botón de descarga se oculta durante la captura para que no salga
-  // dentro de la imagen final del pase.
-  downloadBtn.style.display = 'none';
-
-  html2canvas(passEl, { scale: 3, backgroundColor: '#ffffff', useCORS: true }).then(canvas => {
-    downloadBtn.style.display = '';
-    const dataUrl = canvas.toDataURL('image/png');
-    const a = document.createElement('a');
-    a.href = dataUrl;
-    const safeName = (window.currentQrName||'invitado').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'-');
-    a.download = `Pase-Romy-Saray-${safeName}.png`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }).catch(err => {
-    downloadBtn.style.display = '';
-    console.error('Error al generar la imagen del pase', err);
-    showToast('No se pudo generar la imagen del pase','ti-alert-triangle');
-  });
 }
 
 function resetForm(){
