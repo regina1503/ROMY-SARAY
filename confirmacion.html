@@ -264,7 +264,7 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font-b);min-heig
           <div class="pass-info-grid">
             <div><p class="pass-label">Pases confirmados</p><p class="pass-value" id="pass-qty">—</p></div>
           </div>
-          <button type="button" class="btn-main" style="background:var(--sage-dark);margin-top:1rem" onclick="downloadPass()">
+          <button type="button" id="pass-download-btn" class="btn-main" style="background:var(--sage-dark);margin-top:1rem" onclick="downloadPass()">
             <i class="ti ti-download"></i> Descargar pase completo
           </button>
         </div>
@@ -769,39 +769,56 @@ function downloadPass(){
   const hdBox = document.getElementById('qr-code-hd');
   const hdCanvas = hdBox.querySelector('canvas');
   const originalQrHTML = qrBox.innerHTML;
-
-  // Usamos temporalmente el QR en alta resolución (720x720) dentro del pase
-  // visible, para que la imagen exportada no se vea pixelada, y luego
-  // restauramos el QR normal en pantalla.
-  if(hdCanvas){
-    const clone = hdCanvas.cloneNode(true);
-    clone.style.width = '170px';
-    clone.style.height = '170px';
-    qrBox.innerHTML = '';
-    qrBox.appendChild(clone);
-  }
+  const downloadBtn = document.getElementById('pass-download-btn');
 
   if(typeof html2canvas === 'undefined'){
-    qrBox.innerHTML = originalQrHTML;
     showToast('No se pudo generar la imagen, intenta de nuevo','ti-alert-triangle');
     return;
   }
 
-  html2canvas(passEl, { scale: 3, backgroundColor: '#ffffff', useCORS: true }).then(canvas => {
-    qrBox.innerHTML = originalQrHTML;
-    const dataUrl = canvas.toDataURL('image/png');
-    const a = document.createElement('a');
-    a.href = dataUrl;
-    const safeName = (window.currentQrName||'invitado').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'-');
-    a.download = `Pase-Romy-Saray-${safeName}.png`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }).catch(err => {
-    qrBox.innerHTML = originalQrHTML;
-    console.error('Error al generar la imagen del pase', err);
-    showToast('No se pudo generar la imagen del pase','ti-alert-triangle');
-  });
+  // El botón de descarga se oculta durante la captura para que no salga
+  // dentro de la imagen final del pase.
+  downloadBtn.style.display = 'none';
+
+  // Usamos temporalmente el QR en alta resolución (720x720) dentro del pase
+  // visible, para que la imagen exportada no se vea pixelada, y luego
+  // restauramos el QR normal en pantalla. IMPORTANTE: no se puede clonar el
+  // <canvas> con cloneNode porque eso no copia el dibujo, solo el elemento
+  // vacío — por eso usamos toDataURL() y una <img> normal, esperando a que
+  // cargue antes de capturar la imagen final.
+  const capture = () => {
+    html2canvas(passEl, { scale: 3, backgroundColor: '#ffffff', useCORS: true }).then(canvas => {
+      qrBox.innerHTML = originalQrHTML;
+      downloadBtn.style.display = '';
+      const dataUrl = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      const safeName = (window.currentQrName||'invitado').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'-');
+      a.download = `Pase-Romy-Saray-${safeName}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }).catch(err => {
+      qrBox.innerHTML = originalQrHTML;
+      downloadBtn.style.display = '';
+      console.error('Error al generar la imagen del pase', err);
+      showToast('No se pudo generar la imagen del pase','ti-alert-triangle');
+    });
+  };
+
+  if(hdCanvas){
+    const hdImg = document.createElement('img');
+    hdImg.style.width = '170px';
+    hdImg.style.height = '170px';
+    hdImg.style.display = 'block';
+    hdImg.onload = capture;
+    hdImg.onerror = capture;
+    hdImg.src = hdCanvas.toDataURL('image/png');
+    qrBox.innerHTML = '';
+    qrBox.appendChild(hdImg);
+  } else {
+    capture();
+  }
 }
 
 function resetForm(){
