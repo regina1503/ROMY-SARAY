@@ -337,6 +337,19 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font-b);min-heig
       </div>
 
       <div style="margin-top:1.8rem;padding-top:1.2rem;border-top:1px solid #E6DBF7">
+        <h3 style="font-family:var(--font-d);font-size:18px;margin-bottom:.6rem"><i class="ti ti-users" style="color:var(--sage-dark)"></i> Editar lista de invitados</h3>
+        <p style="font-size:11px;color:var(--ink-soft);margin-bottom:.8rem">Agrega, corrige el nombre o cambia el número de pases de cualquier invitado.</p>
+
+        <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap">
+          <input type="text" id="new-guest-name" placeholder="Nombre del invitado" style="flex:2;min-width:140px;padding:10px;border:1px solid #D9C5EC;border-radius:6px">
+          <input type="number" id="new-guest-passes" placeholder="Pases" min="1" value="1" style="width:80px;padding:10px;border:1px solid #D9C5EC;border-radius:6px">
+          <button class="btn-main" style="width:auto;padding:0 1rem;margin:0" onclick="addGuest()"><i class="ti ti-plus"></i> Agregar</button>
+        </div>
+
+        <div id="guest-edit-list"></div>
+      </div>
+
+      <div style="margin-top:1.8rem;padding-top:1.2rem;border-top:1px solid #E6DBF7">
         <h3 style="font-family:var(--font-d);font-size:18px;margin-bottom:.6rem">Invitados pendientes por confirmar</h3>
         <p style="font-size:11px;color:var(--ink-soft);margin-bottom:.8rem" id="pending-note"></p>
         <div id="pending-list"></div>
@@ -370,11 +383,10 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font-b);min-heig
   <div class="modal-box">
     <div style="font-size:28px;color:var(--clay);margin-bottom:6px"><i class="ti ti-trash"></i></div>
     <h3 style="font-family:var(--font-d);font-size:19px">¿Enviar a la papelera?</h3>
-    <p style="font-size:12px;color:var(--ink-soft);margin:8px 0 12px">No se borra permanentemente: podrás restaurarla desde la papelera. Escribe <b>ELIMINAR</b> para confirmar.</p>
-    <input type="text" id="del-confirm-input" placeholder="ELIMINAR" style="width:100%;padding:10px;border:1px solid #D9C5EC;border-radius:6px;text-align:center;margin-bottom:12px;text-transform:uppercase" oninput="document.getElementById('del-confirm-btn').disabled = this.value.trim().toUpperCase()!=='ELIMINAR'">
+    <p style="font-size:12px;color:var(--ink-soft);margin:8px 0 16px">No se borra permanentemente: podrás restaurarla desde la papelera cuando quieras.</p>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeDelModal()">Cancelar</button>
-      <button class="btn-ok" style="background:var(--clay)" id="del-confirm-btn" disabled>Eliminar</button>
+      <button class="btn-ok" style="background:var(--clay)" id="del-confirm-btn">Eliminar</button>
     </div>
   </div>
 </div>
@@ -387,6 +399,7 @@ const SETTINGS_KEY = 'rsvp_settings_destiny';
 const FB_RSVP_COLLECTION = 'rsvps_destiny';
 const FB_CONFIG_COLLECTION = 'config';
 const FB_SETTINGS_DOC_ID = 'settings_destiny';
+const FB_GUESTLIST_DOC_ID = 'guestlist_destiny';
 
 let settings = { eventName:'Mis XV Años Romy Saray', eventDate:'Sáb. 22 de agosto 2026', adminPin:'1234' };
 let rsvps = [];
@@ -396,7 +409,10 @@ let currentGuestMax = 10;
 let currentGuestName = null;
 
 /* ═════════════ lista de invitados con pases asignados ═════════════ */
-const GUEST_LIST = [
+/* Estos son los valores iniciales; una vez editados desde el panel de
+   admin, la lista real se guarda en Firebase y esta constante ya no se usa
+   (solo sirve como semilla la primera vez que se abre la página). */
+const DEFAULT_GUEST_LIST = [
   {"name":"Carlos Colli","passes":2},{"name":"Fernando Colli","passes":3},
   {"name":"Miguel Consuegra","passes":2},{"name":"Mari Guzmán","passes":2},
   {"name":"Carolina Chable","passes":2},{"name":"Adriana Cepeda","passes":2},
@@ -412,7 +428,8 @@ const GUEST_LIST = [
   {"name":"Marcos Manzanilla","passes":3},{"name":"Henry Vera","passes":2},
   {"name":"Cesar Ku","passes":2},{"name":"Javier Sánchez","passes":2},
   {"name":"Moisés Duran","passes":2},{"name":"Pedro Montero","passes":2},
-  {"name":"Lucio Estrella","passes":3},{"name":"Nidia Caamal","passes":2},
+  {"name":"Lucia Estrella","passes":2},{"name":"Nidia Caamal","passes":2},
+  {"name":"Nallely Solano","passes":2},
   {"name":"Porfirio Pérez","passes":2},{"name":"Joel Cabañas","passes":1},
   {"name":"Kevin","passes":1},{"name":"Noemy","passes":1},{"name":"Sara","passes":1},
   {"name":"Roberto","passes":1},{"name":"Angel","passes":1},{"name":"Geraldine","passes":1},
@@ -426,7 +443,17 @@ const GUEST_LIST = [
   {"name":"Alia","passes":1},{"name":"Fernanda","passes":1},{"name":"Angi","passes":1},
   {"name":"Ingrid","passes":1},{"name":"Janet Corzo","passes":2}
 ];
-const TOTAL_INVITED_PASSES = GUEST_LIST.reduce((s,g)=>s+g.passes,0);
+const TOTAL_INVITED_PASSES = () => GUEST_LIST.reduce((s,g)=>s+g.passes,0);
+
+// Lista real y editable en memoria (empieza como copia de la semilla y luego
+// se reemplaza con lo que haya guardado en Firebase, si existe).
+let GUEST_LIST = DEFAULT_GUEST_LIST.map(g => ({ ...g, gid: 'g' + Math.random().toString(36).slice(2,9) }));
+
+// Asegura que cada invitado tenga un id único (por si se cargó una lista
+// guardada previamente sin ese campo).
+function ensureGuestIds(){
+  GUEST_LIST = GUEST_LIST.map(g => g.gid ? g : { ...g, gid: 'g' + Math.random().toString(36).slice(2,9) });
+}
 
 function normalizeName(s){
   return (s||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ');
@@ -488,6 +515,7 @@ async function init(){
   } else {
     await initLocal();
   }
+  ensureGuestIds();
   applySettings();
   renderAdmin();
 }
@@ -496,6 +524,10 @@ async function initLocal(){
   try{
     const s = await localGet(SETTINGS_KEY);
     if(s){ settings = { ...settings, ...JSON.parse(s) }; }
+  }catch(e){}
+  try{
+    const g = await localGet('guest_list_destiny');
+    if(g){ GUEST_LIST = JSON.parse(g); }
   }catch(e){}
   try{
     const raw = await localGet('rsvp_list_destiny');
@@ -510,6 +542,16 @@ function initFirebase(){
 
       const sDoc = await getDoc(doc(db, FB_CONFIG_COLLECTION, FB_SETTINGS_DOC_ID));
       if(sDoc.exists()){ settings = { ...settings, ...sDoc.data() }; }
+
+      // Cargar la lista de invitados editable. Si nunca se ha guardado una
+      // (primera vez que se abre la página), se guarda la lista semilla para
+      // que quede como punto de partida en Firebase.
+      const gDoc = await getDoc(doc(db, FB_CONFIG_COLLECTION, FB_GUESTLIST_DOC_ID));
+      if(gDoc.exists() && Array.isArray(gDoc.data().guests)){
+        GUEST_LIST = gDoc.data().guests;
+      } else {
+        await saveGuestListRemote();
+      }
 
       // Escucha en tiempo real: si otro invitado confirma desde su celular,
       // el panel de admin se actualiza solo sin recargar la página.
@@ -566,6 +608,15 @@ async function saveSettingsRemote(){
     catch(e){ console.error('Error guardando settings en Firebase, se intentará localmente.', e); }
   }
   await localSet(SETTINGS_KEY, JSON.stringify(settings));
+}
+
+async function saveGuestListRemote(){
+  const useFb = await fbReady();
+  if(useFb){
+    try{ const { db, doc, setDoc } = window.__fb; await setDoc(doc(db, FB_CONFIG_COLLECTION, FB_GUESTLIST_DOC_ID), { guests: GUEST_LIST }); return; }
+    catch(e){ console.error('Error guardando la lista de invitados en Firebase, se guardará localmente.', e); }
+  }
+  await localSet('guest_list_destiny', JSON.stringify(GUEST_LIST));
 }
 
 function applySettings(){
@@ -865,7 +916,7 @@ function renderAdmin(){
   const pending = GUEST_LIST.filter(g=>!respondedNames.has(normalizeName(g.name)));
   const pendingPasses = pending.reduce((s,g)=>s+g.passes,0);
   document.getElementById('pending-note').textContent =
-    `${pending.length} de ${GUEST_LIST.length} invitados no han respondido (${pendingPasses} de ${TOTAL_INVITED_PASSES} pases sin confirmar).`;
+    `${pending.length} de ${GUEST_LIST.length} invitados no han respondido (${pendingPasses} de ${TOTAL_INVITED_PASSES()} pases sin confirmar).`;
   const pendingList = document.getElementById('pending-list');
   if(!pending.length){
     pendingList.innerHTML = '<p style="text-align:center;font-size:13px;color:var(--ink-soft);padding:.8rem 0;font-style:italic">¡Todos los invitados de la lista han respondido!</p>';
@@ -875,6 +926,8 @@ function renderAdmin(){
       <span class="pill mesa">${g.passes} pase${g.passes>1?'s':''}</span>
     </div>`).join('');
   }
+
+  renderGuestEditList();
 
   const tableOf = assignTables(active);
 
@@ -923,10 +976,63 @@ function renderAdmin(){
   }
 }
 
+/* ═════════════ Edición de la lista de invitados (nombre y pases) ═════════════ */
+function renderGuestEditList(){
+  const box = document.getElementById('guest-edit-list');
+  if(!box) return;
+  const sorted = GUEST_LIST.slice().sort((a,b)=>a.name.localeCompare(b.name,'es'));
+  box.innerHTML = sorted.map(g => `<div class="rsvp-row" style="gap:.5rem">
+    <input type="text" value="${escapeHtml(g.name)}" data-gid="${g.gid}" data-field="name" class="guest-edit-input" style="flex:2;min-width:110px;padding:8px;border:1px solid #D9C5EC;border-radius:6px">
+    <input type="number" min="1" value="${g.passes}" data-gid="${g.gid}" data-field="passes" class="guest-edit-input" style="width:70px;padding:8px;border:1px solid #D9C5EC;border-radius:6px">
+    <button class="btn-export" style="border-color:var(--sage-dark);color:var(--sage-dark)" onclick="saveGuestEdit('${g.gid}')"><i class="ti ti-device-floppy"></i> Guardar</button>
+    <button class="del-btn" onclick="deleteGuest('${g.gid}')" title="Quitar de la lista"><i class="ti ti-trash"></i></button>
+  </div>`).join('') || '<p style="text-align:center;font-size:13px;color:var(--ink-soft);padding:.8rem 0;font-style:italic">No hay invitados en la lista.</p>';
+}
+
+async function saveGuestEdit(gid){
+  const nameInput = document.querySelector(`.guest-edit-input[data-gid="${gid}"][data-field="name"]`);
+  const passesInput = document.querySelector(`.guest-edit-input[data-gid="${gid}"][data-field="passes"]`);
+  const name = nameInput.value.trim();
+  const passes = parseInt(passesInput.value, 10);
+  if(!name){ showToast('El nombre no puede quedar vacío','ti-alert-circle'); return; }
+  if(!passes || passes < 1){ showToast('El número de pases debe ser al menos 1','ti-alert-circle'); return; }
+  const guest = GUEST_LIST.find(g=>g.gid===gid);
+  if(!guest) return;
+  guest.name = name;
+  guest.passes = passes;
+  await saveGuestListRemote();
+  renderAdmin();
+  showToast('Invitado actualizado','ti-circle-check');
+}
+
+// Simple confirm() en vez de un modal con texto para escribir: es mucho más
+// rápido de usar mientras se van revisando varios invitados seguidos.
+async function deleteGuest(gid){
+  const guest = GUEST_LIST.find(g=>g.gid===gid);
+  if(!guest) return;
+  if(!confirm(`¿Quitar a "${guest.name}" de la lista de invitados?`)) return;
+  GUEST_LIST = GUEST_LIST.filter(g=>g.gid!==gid);
+  await saveGuestListRemote();
+  renderAdmin();
+  showToast('Invitado eliminado de la lista','ti-trash');
+}
+
+async function addGuest(){
+  const nameInput = document.getElementById('new-guest-name');
+  const passesInput = document.getElementById('new-guest-passes');
+  const name = nameInput.value.trim();
+  const passes = parseInt(passesInput.value, 10) || 1;
+  if(!name){ showToast('Escribe el nombre del invitado','ti-alert-circle'); return; }
+  GUEST_LIST.push({ name, passes, gid: 'g' + Math.random().toString(36).slice(2,9) });
+  await saveGuestListRemote();
+  nameInput.value = '';
+  passesInput.value = '1';
+  renderAdmin();
+  showToast('Invitado agregado','ti-circle-check');
+}
+
 function promptDelete(id){
   deleteTargetId = id;
-  document.getElementById('del-confirm-input').value = '';
-  document.getElementById('del-confirm-btn').disabled = true;
   document.getElementById('del-modal').classList.add('active');
   document.getElementById('del-confirm-btn').onclick = executeDelete;
 }
