@@ -413,6 +413,7 @@ let rsvps = [];
 let attending = null, qty = 1, isAdminUnlocked = false, deleteTargetId = null;
 let fbUnsub = null;
 let currentGuestMax = 10;
+let currentGuestMatched = false;
 let currentGuestName = null;
 
 /* ═════════════ lista de invitados con pases asignados ═════════════ */
@@ -485,12 +486,22 @@ function updateGuestMatch(){
   const g = matchGuest(val);
   currentGuestName = val.trim();
   currentGuestMax = g ? g.passes : 10;
+  currentGuestMatched = !!g;
   const hint = document.getElementById('guest-hint');
   if(g){
     hint.textContent = `Tienes ${g.passes} pase${g.passes>1?'s':''} asignado${g.passes>1?'s':''}.`;
     hint.classList.remove('hidden');
   } else {
     hint.classList.add('hidden');
+    // Si el nombre deja de coincidir con la lista (por ejemplo, lo está
+    // corrigiendo), se ocultan de nuevo los pases hasta que vuelva a
+    // coincidir con alguien de la lista.
+    if(attending===true){
+      attending = null;
+      document.getElementById('btn-yes').classList.remove('selected');
+      document.getElementById('yes-fields').classList.add('hidden');
+      document.getElementById('btn-submit').disabled = true;
+    }
   }
   if(qty > currentGuestMax){ qty = currentGuestMax; document.getElementById('qty-num').textContent = qty; }
 }
@@ -793,6 +804,10 @@ function resumeScannerFromWelcome(){
 
 /* ═════════════ form ═════════════ */
 function selectAttending(val){
+  if(val===true && !currentGuestMatched){
+    showToast('Primero escribe tu nombre completo para ver tus pases','ti-alert-circle');
+    return;
+  }
   attending = val;
   document.getElementById('btn-yes').classList.toggle('selected', val===true);
   document.getElementById('btn-no').classList.toggle('selected', val===false);
@@ -893,7 +908,7 @@ function resetForm(){
   document.getElementById('f-name').value = '';
   document.getElementById('f-message').value = '';
   attending = null; qty = 1;
-  currentGuestMax = 10; currentGuestName = null;
+  currentGuestMax = 10; currentGuestName = null; currentGuestMatched = false;
   document.getElementById('guest-hint').classList.add('hidden');
   document.getElementById('btn-yes').classList.remove('selected');
   document.getElementById('btn-no').classList.remove('selected');
