@@ -473,7 +473,8 @@ function populateGuestDatalist(query){
   if(!dl) return;
   if(!query || query.trim().length < 4){ dl.innerHTML = ''; return; }
   const q = normalizeName(query);
-  const matches = GUEST_LIST.filter(g=>normalizeName(g.name).includes(q));
+  const respondedNames = new Set(rsvps.filter(r=>!r.deleted).map(r=>normalizeName(r.name)));
+  const matches = GUEST_LIST.filter(g=>normalizeName(g.name).includes(q) && !respondedNames.has(normalizeName(g.name)));
   dl.innerHTML = matches.map(g=>`<option value="${escapeHtml(g.name)}">`).join('');
 }
 function updateGuestMatch(){
