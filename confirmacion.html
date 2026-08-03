@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title id="page-title">Mis XV Años Romy Sarai — Confirmación</title>
+<title id="page-title">Mis XV Años Romy Saray — Confirmación</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,500;0,600;1,400&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -116,6 +116,30 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font-b);min-heig
 .result-detail{display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid #EEE6D5;font-size:13px}
 .result-detail span:last-child{font-weight:600;color:var(--ink)}
 
+/* ═══ Pase / Boleto de acceso ═══ */
+.pass-ticket{
+  margin:1.4rem 0; text-align:center; border-radius:16px; overflow:hidden;
+  background:linear-gradient(180deg,var(--brass-light) 0%,var(--paper-2) 22%);
+  border:1px solid var(--brass); box-shadow:0 10px 30px rgba(107,78,158,.18);
+}
+.pass-top{padding:1.1rem 1rem .6rem}
+.pass-kicker{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--sage-dark);font-weight:700}
+.pass-hostname{font-family:var(--font-d);font-size:24px;color:var(--ink);margin-top:2px}
+.pass-divider{display:flex;align-items:center;position:relative;padding:0 4px}
+.pass-dashes{flex:1;height:0;border-top:2px dashed var(--brass);margin:0 2px}
+.pass-notch{width:20px;height:20px;background:var(--paper);border-radius:50%;flex-shrink:0}
+.pass-notch.left{margin-left:-14px;border:1px solid var(--brass)}
+.pass-notch.right{margin-right:-14px;border:1px solid var(--brass)}
+.pass-body{padding:1.2rem 1.3rem}
+.pass-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-soft);font-weight:600;margin-bottom:2px}
+.pass-guest{font-family:var(--font-d);font-size:21px;color:var(--sage-dark);margin-bottom:1rem}
+.pass-qr{display:inline-flex;justify-content:center;margin:.6rem 0 1rem;padding:10px;background:#fff;border-radius:12px}
+.pass-info-grid{display:flex;justify-content:center;gap:2.5rem;margin-top:.6rem}
+.pass-value{font-size:18px;font-weight:700;color:var(--ink)}
+.pass-bottom{padding:1rem 1.2rem 1.3rem;background:var(--paper)}
+.pass-date{font-family:var(--font-d);font-style:italic;font-size:15px;color:var(--ink);margin-bottom:.5rem}
+.pass-reminder{font-size:12px;color:var(--sage-dark);font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px}
+
 /* admin */
 .admin-toggle{text-align:center;margin-top:3rem;padding:1.5rem 1.5rem 0;border-top:1px solid #E6DBF7}
 .admin-link{font-size:11px;color:#B8AC8E;letter-spacing:1px;background:none;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-family:var(--font-b)}
@@ -165,7 +189,7 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font-b);min-heig
 
   <div class="head">
     <p class="mark">Confirmación de asistencia</p>
-    <h1 id="ev-title"><em>Mis XV Años Romy Sarai</em></h1>
+    <h1 id="ev-title"><em>Mis XV Años Romy Saray</em></h1>
     <p class="date" id="ev-date">Sáb. 22 de agosto 2026</p>
   </div>
   <div class="divider"><span></span><i class="ti ti-sparkles"></i><span></span></div>
@@ -223,15 +247,34 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font-b);min-heig
       <p class="result-title" id="r-title">¡Gracias!</p>
       <p class="result-sub" id="r-sub">Tu respuesta fue registrada.</p>
       <div id="r-details"></div>
-      <div id="qr-wrapper" class="hidden" style="margin:1.2rem 0">
-        <p style="font-size:12px;color:var(--ink-soft);margin-bottom:.6rem">Muestra este código QR en la entrada del evento</p>
-        <div id="qr-code" style="display:flex;justify-content:center"></div>
-        <div id="qr-code-hd" style="display:none"></div>
-        <button type="button" class="btn-main" style="background:var(--sage-dark);margin-top:.8rem" onclick="downloadQR()">
-          <i class="ti ti-download"></i> Descargar QR (alta calidad)
-        </button>
-        <p style="font-size:11px;color:var(--ink-soft);margin-top:.6rem">Descárgalo o guarda una captura, lo necesitarás para acceder</p>
+
+      <!-- PASE / BOLETO DE ACCESO -->
+      <div id="pass-ticket" class="hidden pass-ticket">
+        <div class="pass-top">
+          <p class="pass-kicker">Mis XV Años</p>
+          <p class="pass-hostname" id="pass-hostname">Romy Saray</p>
+        </div>
+        <div class="pass-divider"><span class="pass-notch left"></span><span class="pass-dashes"></span><span class="pass-notch right"></span></div>
+        <div class="pass-body">
+          <p class="pass-label">Invitado</p>
+          <p class="pass-guest" id="pass-guest">—</p>
+          <div id="qr-code" class="pass-qr"></div>
+          <div id="qr-code-hd" style="display:none"></div>
+          <div class="pass-info-grid">
+            <div><p class="pass-label">Pases</p><p class="pass-value" id="pass-qty">—</p></div>
+            <div><p class="pass-label">Mesa</p><p class="pass-value" id="pass-mesa">—</p></div>
+          </div>
+          <button type="button" class="btn-main" style="background:var(--sage-dark);margin-top:1rem" onclick="downloadQR()">
+            <i class="ti ti-download"></i> Descargar pase (alta calidad)
+          </button>
+        </div>
+        <div class="pass-divider"><span class="pass-notch left"></span><span class="pass-dashes"></span><span class="pass-notch right"></span></div>
+        <div class="pass-bottom">
+          <p class="pass-date" id="pass-date">Sáb. 22 de agosto 2026</p>
+          <p class="pass-reminder"><i class="ti ti-alert-circle"></i> No olvides presentar este pase en la entrada</p>
+        </div>
       </div>
+
       <button class="btn-main" style="margin-top:1.5rem" onclick="resetForm()">Registrar otra respuesta</button>
     </div>
   </div>
@@ -255,7 +298,7 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font-b);min-heig
       </div>
       <div class="field">
         <label>Nombre del evento</label>
-        <input type="text" id="s-event-name" placeholder="Ej. Mis XV Años Romy Sarai">
+        <input type="text" id="s-event-name" placeholder="Ej. Mis XV Años Romy Saray">
       </div>
       <div class="field">
         <label>Fecha / hora</label>
@@ -347,7 +390,7 @@ const FB_RSVP_COLLECTION = 'rsvps_destiny';
 const FB_CONFIG_COLLECTION = 'config';
 const FB_SETTINGS_DOC_ID = 'settings_destiny';
 
-let settings = { eventName:'Mis XV Años Romy Sarai', eventDate:'Sáb. 22 de agosto 2026', adminPin:'1234' };
+let settings = { eventName:'Mis XV Años Romy Saray', eventDate:'Sáb. 22 de agosto 2026', adminPin:'1234' };
 let rsvps = [];
 let attending = null, qty = 1, isAdminUnlocked = false, deleteTargetId = null;
 let fbUnsub = null;
@@ -667,7 +710,7 @@ function showResult(entry){
   const title = document.getElementById('r-title');
   const sub = document.getElementById('r-sub');
   const details = document.getElementById('r-details');
-  const qrWrapper = document.getElementById('qr-wrapper');
+  const passTicket = document.getElementById('pass-ticket');
   const qrBox = document.getElementById('qr-code');
   qrBox.innerHTML = '';
   if(entry.attending){
@@ -676,19 +719,24 @@ function showResult(entry){
     sub.textContent = 'Tu asistencia quedó confirmada. ¡Te esperamos!';
     const tableOf = assignTables(rsvps.filter(r=>!r.deleted));
     const mesa = tableOf[entry.id];
-    details.innerHTML = `
-      <div class="result-detail"><span>Personas</span><span>${entry.qty}</span></div>
-      <div class="result-detail"><span>Mesa asignada</span><span>${mesa ? 'Mesa ' + mesa : 'Por confirmar'}</span></div>
-    `;
-    qrWrapper.classList.remove('hidden');
+    details.innerHTML = '';
+
+    // Llenar el pase con los datos del invitado
+    document.getElementById('pass-hostname').textContent = settings.eventName ? settings.eventName.replace(/^Mis XV Años\s*/i,'') : 'Romy Saray';
+    document.getElementById('pass-guest').textContent = entry.name;
+    document.getElementById('pass-qty').textContent = entry.qty;
+    document.getElementById('pass-mesa').textContent = mesa ? mesa : 'Por asignar';
+    document.getElementById('pass-date').textContent = settings.eventDate || 'Fecha por definir';
+    passTicket.classList.remove('hidden');
+
     const qrPayload = `ROMY-XV|${entry.id}|${entry.name}|${entry.qty}|Mesa ${mesa||'?'}`;
     window.currentQrName = entry.name;
     try{
       if(typeof QRCode === 'undefined') throw new Error('QRCode no disponible');
       new QRCode(qrBox, {
         text: qrPayload,
-        width: 180,
-        height: 180,
+        width: 170,
+        height: 170,
         colorDark: '#4A2C55',
         colorLight: '#ffffff',
         correctLevel: QRCode.CorrectLevel.M
@@ -712,7 +760,7 @@ function showResult(entry){
     title.textContent = 'Lamentamos que no puedas ir';
     sub.textContent = 'Registramos tu respuesta. ¡Gracias por avisarnos!';
     details.innerHTML = '';
-    qrWrapper.classList.add('hidden');
+    passTicket.classList.add('hidden');
   }
 }
 
