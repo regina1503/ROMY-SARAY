@@ -260,7 +260,6 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font-b);min-heig
           <p class="pass-label">Invitado</p>
           <p class="pass-guest" id="pass-guest">—</p>
           <div id="qr-code" class="pass-qr"></div>
-          <div id="qr-code-hd" style="display:none"></div>
           <div class="pass-info-grid">
             <div><p class="pass-label">Pases confirmados</p><p class="pass-value" id="pass-qty">—</p></div>
           </div>
@@ -732,18 +731,12 @@ function showResult(entry){
     window.currentQrName = entry.name;
     try{
       if(typeof QRCode === 'undefined') throw new Error('QRCode no disponible');
+      // Se genera un solo QR ya en alta resolución (720x720 px reales) y se
+      // achica solo visualmente con CSS a 170px. Así se ve nítido en pantalla,
+      // en la captura del pase y al hacer zoom, sin depender de intercambios
+      // ni de generar un segundo QR aparte (que era la causa de que a veces
+      // no apareciera al descargar el pase).
       new QRCode(qrBox, {
-        text: qrPayload,
-        width: 170,
-        height: 170,
-        colorDark: '#4A2C55',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.M
-      });
-      // Versión en alta resolución (para descarga sin pixelarse)
-      const hdBox = document.getElementById('qr-code-hd');
-      hdBox.innerHTML = '';
-      new QRCode(hdBox, {
         text: qrPayload,
         width: 720,
         height: 720,
@@ -751,6 +744,10 @@ function showResult(entry){
         colorLight: '#ffffff',
         correctLevel: QRCode.CorrectLevel.H
       });
+      const qrCanvas = qrBox.querySelector('canvas');
+      const qrImg = qrBox.querySelector('img');
+      if(qrCanvas){ qrCanvas.style.width = '170px'; qrCanvas.style.height = '170px'; qrCanvas.style.display = 'block'; }
+      if(qrImg){ qrImg.style.width = '170px'; qrImg.style.height = '170px'; qrImg.style.display = qrCanvas ? 'none' : 'block'; }
     } catch(err){
       qrBox.innerHTML = `<p style="font-size:12px;color:var(--clay)">No se pudo generar el QR. Guarda una captura de esta pantalla y muestra tu nombre en la entrada; el anfitrión podrá ubicarte por nombre.</p>`;
     }
@@ -765,10 +762,6 @@ function showResult(entry){
 
 function downloadPass(){
   const passEl = document.getElementById('pass-ticket');
-  const qrBox = document.getElementById('qr-code');
-  const hdBox = document.getElementById('qr-code-hd');
-  const hdCanvas = hdBox.querySelector('canvas');
-  const originalQrHTML = qrBox.innerHTML;
   const downloadBtn = document.getElementById('pass-download-btn');
 
   if(typeof html2canvas === 'undefined'){
@@ -780,45 +773,21 @@ function downloadPass(){
   // dentro de la imagen final del pase.
   downloadBtn.style.display = 'none';
 
-  // Usamos temporalmente el QR en alta resolución (720x720) dentro del pase
-  // visible, para que la imagen exportada no se vea pixelada, y luego
-  // restauramos el QR normal en pantalla. IMPORTANTE: no se puede clonar el
-  // <canvas> con cloneNode porque eso no copia el dibujo, solo el elemento
-  // vacío — por eso usamos toDataURL() y una <img> normal, esperando a que
-  // cargue antes de capturar la imagen final.
-  const capture = () => {
-    html2canvas(passEl, { scale: 3, backgroundColor: '#ffffff', useCORS: true }).then(canvas => {
-      qrBox.innerHTML = originalQrHTML;
-      downloadBtn.style.display = '';
-      const dataUrl = canvas.toDataURL('image/png');
-      const a = document.createElement('a');
-      a.href = dataUrl;
-      const safeName = (window.currentQrName||'invitado').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'-');
-      a.download = `Pase-Romy-Saray-${safeName}.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }).catch(err => {
-      qrBox.innerHTML = originalQrHTML;
-      downloadBtn.style.display = '';
-      console.error('Error al generar la imagen del pase', err);
-      showToast('No se pudo generar la imagen del pase','ti-alert-triangle');
-    });
-  };
-
-  if(hdCanvas){
-    const hdImg = document.createElement('img');
-    hdImg.style.width = '170px';
-    hdImg.style.height = '170px';
-    hdImg.style.display = 'block';
-    hdImg.onload = capture;
-    hdImg.onerror = capture;
-    hdImg.src = hdCanvas.toDataURL('image/png');
-    qrBox.innerHTML = '';
-    qrBox.appendChild(hdImg);
-  } else {
-    capture();
-  }
+  html2canvas(passEl, { scale: 3, backgroundColor: '#ffffff', useCORS: true }).then(canvas => {
+    downloadBtn.style.display = '';
+    const dataUrl = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    const safeName = (window.currentQrName||'invitado').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'-');
+    a.download = `Pase-Romy-Saray-${safeName}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }).catch(err => {
+    downloadBtn.style.display = '';
+    console.error('Error al generar la imagen del pase', err);
+    showToast('No se pudo generar la imagen del pase','ti-alert-triangle');
+  });
 }
 
 function resetForm(){
