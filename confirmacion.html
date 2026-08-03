@@ -324,6 +324,10 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font-b);min-heig
           <i class="ti ti-camera"></i> Escanear con cámara
         </button>
         <div id="qr-reader" class="hidden" style="width:100%;max-width:320px;margin:0 auto 1rem"></div>
+
+        <!-- Pantalla de bienvenida tras escanear un código con la cámara -->
+        <div id="qr-welcome" class="hidden" style="text-align:center;padding:1.2rem;border-radius:12px;margin-bottom:1rem"></div>
+
         <div class="field" style="display:flex;gap:.5rem;align-items:flex-end">
           <input type="text" id="qr-input" placeholder="ROMY-XV|abc123|Nombre|2" style="flex:1" onkeydown="if(event.key==='Enter'){validateAccess();}">
           <button class="btn-main" style="width:auto;padding:0 1.2rem;margin:0" onclick="validateAccess()">Validar</button>
@@ -666,9 +670,9 @@ function toggleScanner(){
     { facingMode: 'environment' },
     { fps: 10, qrbox: { width: 220, height: 220 } },
     (decodedText) => {
-      document.getElementById('qr-input').value = decodedText;
-      validateAccess();
       if(navigator.vibrate) navigator.vibrate(120);
+      try{ html5QrScanner.pause(true); }catch(e){}
+      showScanWelcome(decodedText);
     },
     () => {}
   ).catch(() => {
@@ -685,25 +689,19 @@ function stopScanner(){
     }).catch(() => { html5QrScanner = null; });
   }
   document.getElementById('qr-reader').classList.add('hidden');
+  document.getElementById('qr-welcome').classList.add('hidden');
   document.getElementById('scan-btn').innerHTML = '<i class="ti ti-camera"></i> Escanear con cámara';
   scannerActive = false;
 }
 
-function validateAccess(){
-  const raw = document.getElementById('qr-input').value.trim();
-  const resultBox = document.getElementById('qr-result');
-  if(!raw){ resultBox.innerHTML=''; return; }
-  const parts = raw.split('|');
-  if(parts[0] !== 'ROMY-XV' || parts.length < 4){
-    resultBox.innerHTML = `<div class="rsvp-row" style="border-color:var(--clay)"><span class="rsvp-name" style="color:var(--clay)"><i class="ti ti-x"></i> Código no válido</span></div>`;
-    return;
-  }
+// Busca el código, marca el ingreso si es la primera vez, y guarda el cambio.
+// La usan tanto la validación manual (pegar texto) como el escaneo con cámara.
+function lookupAccessCode(raw){
+  const parts = (raw||'').split('|');
+  if(parts[0] !== 'ROMY-XV' || parts.length < 4) return { ok:false, reason:'invalid' };
   const id = parts[1];
   const entry = rsvps.find(r=>r.id===id);
-  if(!entry || !entry.attending){
-    resultBox.innerHTML = `<div class="rsvp-row" style="border-color:var(--clay)"><span class="rsvp-name" style="color:var(--clay)"><i class="ti ti-x"></i> Código no encontrado o no confirmado</span></div>`;
-    return;
-  }
+  if(!entry || !entry.attending) return { ok:false, reason:'notfound' };
   const already = !!entry.checkedIn;
   if(!already){
     entry.checkedIn = true;
@@ -711,6 +709,21 @@ function validateAccess(){
     saveRsvpRemote(entry);
     renderAdmin();
   }
+  return { ok:true, entry, already };
+}
+
+function validateAccess(){
+  const raw = document.getElementById('qr-input').value.trim();
+  const resultBox = document.getElementById('qr-result');
+  if(!raw){ resultBox.innerHTML=''; return; }
+  const res = lookupAccessCode(raw);
+  if(!res.ok){
+    resultBox.innerHTML = res.reason === 'invalid'
+      ? `<div class="rsvp-row" style="border-color:var(--clay)"><span class="rsvp-name" style="color:var(--clay)"><i class="ti ti-x"></i> Código no válido</span></div>`
+      : `<div class="rsvp-row" style="border-color:var(--clay)"><span class="rsvp-name" style="color:var(--clay)"><i class="ti ti-x"></i> Código no encontrado o no confirmado</span></div>`;
+    return;
+  }
+  const { entry, already } = res;
   const horaTexto = entry.checkedInAt
     ? new Date(entry.checkedInAt).toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' })
     : '';
@@ -719,6 +732,53 @@ function validateAccess(){
     <span class="pill mesa">${entry.qty} pase${entry.qty>1?'s':''}${horaTexto ? ' · ' + horaTexto : ''}</span>
   </div>`;
   document.getElementById('qr-input').value='';
+}
+
+// Pantalla grande de bienvenida que aparece al escanear con la cámara.
+// Pausa la cámara y ofrece "Leer otro código" o "Apagar cámara".
+function showScanWelcome(raw){
+  const res = lookupAccessCode(raw);
+  const welcome = document.getElementById('qr-welcome');
+  welcome.classList.remove('hidden');
+
+  if(!res.ok){
+    welcome.style.background = '#F3E5FA';
+    welcome.innerHTML = `
+      <div style="font-size:34px;color:var(--clay);margin-bottom:.4rem"><i class="ti ti-x"></i></div>
+      <p style="font-family:var(--font-d);font-size:20px;color:var(--ink)">${res.reason==='invalid' ? 'Código no válido' : 'No encontrado o sin confirmar'}</p>
+      ${scanWelcomeButtons()}
+    `;
+    return;
+  }
+
+  const { entry, already } = res;
+  const horaTexto = entry.checkedInAt
+    ? new Date(entry.checkedInAt).toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' })
+    : '';
+  welcome.style.background = already ? 'var(--brass-light)' : 'var(--sage)';
+  welcome.innerHTML = `
+    <div style="font-size:38px;color:${already ? 'var(--brass-dark)' : '#fff'};margin-bottom:.3rem"><i class="ti ${already ? 'ti-alert-circle' : 'ti-circle-check'}"></i></div>
+    <p style="font-family:var(--font-d);font-size:15px;letter-spacing:1px;text-transform:uppercase;color:${already ? 'var(--brass-dark)' : '#fff'};margin-bottom:2px">${already ? 'Ya había ingresado' : 'Bienvenido'}</p>
+    <p style="font-family:var(--font-d);font-size:26px;color:${already ? 'var(--ink)' : '#fff'};font-weight:600;margin-bottom:6px">${escapeHtml(entry.name)}</p>
+    <p style="font-size:14px;color:${already ? 'var(--ink-soft)' : '#fff'}">${entry.qty} pase${entry.qty>1?'s':''}${horaTexto ? ' · ingresó ' + horaTexto : ''}</p>
+    ${scanWelcomeButtons()}
+  `;
+}
+
+function scanWelcomeButtons(){
+  return `
+    <div style="display:flex;gap:.6rem;margin-top:1rem;justify-content:center;flex-wrap:wrap">
+      <button class="btn-main" style="width:auto;padding:0 1rem;margin:0;background:var(--ink)" onclick="resumeScannerFromWelcome()"><i class="ti ti-scan"></i> Leer nuevo código</button>
+      <button class="btn-cancel" style="border:1px solid #D9C5EC" onclick="stopScanner()"><i class="ti ti-power"></i> Apagar cámara</button>
+    </div>
+  `;
+}
+
+function resumeScannerFromWelcome(){
+  document.getElementById('qr-welcome').classList.add('hidden');
+  if(html5QrScanner){
+    try{ html5QrScanner.resume(); }catch(e){}
+  }
 }
 
 /* ═════════════ form ═════════════ */
