@@ -18,24 +18,26 @@
   window.__fbReady = new Promise(resolve => { window.__fbReadyResolve = resolve; });
 </script>
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-analytics.js";
   import {
     getFirestore, collection, doc, getDoc, getDocs, setDoc, deleteDoc, onSnapshot
-  } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+  } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
 
   const firebaseConfig = {
-    apiKey: "AIzaSyAapAuOU_uOTj1qtsF1klLOe7xP2S_kWts",
-    authDomain: "mis-xv-a.firebaseapp.com",
-    projectId: "mis-xv-a",
-    storageBucket: "mis-xv-a.firebasestorage.app",
-    messagingSenderId: "464481337448",
-    appId: "1:464481337448:web:abd9c73f9ef32710257bdd",
-    measurementId: "G-Q0D72PZ95B"
+    apiKey: "AIzaSyDwqP4Wh7LXG5ehOnR6m_mcfaNRw92NnNg",
+    authDomain: "romy-mis-xv.firebaseapp.com",
+    projectId: "romy-mis-xv",
+    storageBucket: "romy-mis-xv.firebasestorage.app",
+    messagingSenderId: "1031057025091",
+    appId: "1:1031057025091:web:c3ac06e74922a7113fccf6",
+    measurementId: "G-TZ45RJ0YZR"
   };
 
   try {
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    try{ getAnalytics(app); }catch(e){}
     window.__fb = { db, collection, doc, getDoc, getDocs, setDoc, deleteDoc, onSnapshot };
   } catch (e) {
     console.error('No se pudo inicializar Firebase, se usará almacenamiento local.', e);
@@ -517,7 +519,11 @@ async function init(){
   const useFb = await fbReady();
   if(useFb){
     try{ await initFirebase(); }
-    catch(e){ console.error('Firebase no disponible, usando almacenamiento local.', e); await initLocal(); }
+    catch(e){
+      console.error('Firebase no disponible, usando almacenamiento local.', e);
+      showToast('Sin conexión con la nube: revisa las reglas de Firestore','ti-cloud-off');
+      await initLocal();
+    }
   } else {
     await initLocal();
   }
@@ -593,7 +599,10 @@ async function saveRsvpRemote(entry){
   const useFb = await fbReady();
   if(useFb){
     try{ const { db, doc, setDoc } = window.__fb; await setDoc(doc(db, FB_RSVP_COLLECTION, entry.id), entry); return; }
-    catch(e){ console.error('Error guardando en Firebase, se guardará localmente.', e); }
+    catch(e){
+      console.error('Error guardando en Firebase, se guardará solo en este dispositivo.', e);
+      showToast('No se pudo sincronizar con la nube, se guardó solo en este dispositivo','ti-cloud-off');
+    }
   }
   await localSet('rsvp_list_destiny', JSON.stringify(rsvps));
 }
