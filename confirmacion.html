@@ -812,12 +812,17 @@ async function submitRSVP(){
   if(!name){ showToast('Escribe tu nombre','ti-alert-circle'); return; }
   if(attending===null){ showToast('Indica si asistirás','ti-alert-circle'); return; }
 
-  const id = 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
   const matched = matchGuest(name);
+  if(!matched){
+    showToast('Lamentamos que no estés en la lista, tu nombre no está registrado como invitado.','ti-alert-circle');
+    return;
+  }
+
+  const id = 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
   const entry = {
     id, name, attending,
     qty: attending ? qty : 0,
-    assignedPasses: matched ? matched.passes : null,
+    assignedPasses: matched.passes,
     message: attending ? '' : document.getElementById('f-message').value.trim(),
     ts: Date.now()
   };
