@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es" class="bg-white scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Mis XV Años - Romy Saray 💜</title>
+
+    <!-- Open Graph / Vista Previa para WhatsApp y Redes Sociales -->
+    <meta property="og:title" content="Mis XV Años - Romy Saray 💜" />
+    <meta property="og:description" content="Mis xv años Romy Saray" />
+    <meta property="og:image" content="https://raw.githubusercontent.com/INVITACIONESMOMENTOSENCANTADOS/ROMY-MIS-XV-A-OS/main/portada_20260802_151434_0000.jpg" />
+    <meta property="og:image:secure_url" content="https://raw.githubusercontent.com/INVITACIONESMOMENTOSENCANTADOS/ROMY-MIS-XV-A-OS/main/portada_20260802_151434_0000.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:type" content="website" />
+
+    <!-- Meta etiquetas para Twitter/X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Mis XV Años - Romy Saray 💜" />
+    <meta name="twitter:description" content="Mis xv años Romy Saray" />
+    <meta name="twitter:image" content="https://raw.githubusercontent.com/INVITACIONESMOMENTOSENCANTADOS/ROMY-MIS-XV-A-OS/main/portada_20260802_151434_0000.jpg" />
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            background-color: #ffffff;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .glass-pill {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .invitation-img {
+            display: block;
+            width: 100%;
+            height: auto;
+            margin: 0;
+            padding: 0;
+            vertical-align: bottom;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { 
+                filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.9)) drop-shadow(0 0 25px rgba(212, 175, 55, 0.5)); 
+                transform: scale(1); 
+            }
+            50% { 
+                filter: drop-shadow(0 0 22px rgba(255, 215, 0, 1)) drop-shadow(0 0 40px rgba(212, 175, 55, 0.8)); 
+                transform: scale(1.06); 
+            }
+        }
+
+        .wax-seal-img { 
+            animation: pulseGlow 2.5s infinite ease-in-out; 
+            cursor: pointer; 
+            transition: transform 0.2s ease; 
+        }
+
+        .wax-seal-img:active { 
+            transform: scale(0.92) !important; 
+        }
+
+        body.locked { 
+            overflow: hidden; 
+            height: 100vh; 
+        }
+
+        /* Scroll animation classes for photo gallery */
+        .photo-card {
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+            transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .photo-card.reveal {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    </style>
+</head>
+<body class="min-h-full select-none relative text-gray-800 bg-white locked">
+
+    <!-- Audio Element with Tangled song -->
+    <audio id="bgMusic" loop preload="auto">
+        <source src="https://raw.githubusercontent.com/regina1503/ROMY-MIS-XV-A-OS/main/I%20See%20The%20Light%20Tangled%20-%20Roxane%20Genot%20%26%20Jan%20Pouska.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Canvas for Floating Golden Sparkles -->
+    <canvas id="sparklesCanvas" class="fixed inset-0 pointer-events-none z-20"></canvas>
+
+    <!-- Envelope Screen Overlay with ROMY (4).jpg background -->
+    <div id="envelopeOverlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-1000 bg-cover bg-center bg-no-repeat" style="background-image: url('https://raw.githubusercontent.com/regina1503/ROMY-MIS-XV-A-OS/main/ROMY%20(4).jpg');">
+        
+        <!-- Envelope Wrapper (Reduced size by 5%) -->
+        <div id="envelopeWrapper" class="relative z-10 w-[85%] max-w-[380px] flex flex-col items-center">
+            
+            <!-- Title Header in Bright White moved higher up -->
+            <div class="text-center mb-6 -translate-y-20 sm:-translate-y-28">
+                <p class="text-white text-xs sm:text-sm tracking-[0.3em] uppercase font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Mis XV Años</p>
+                <h1 class="text-3xl sm:text-4xl font-serif font-bold text-white mt-1 tracking-wide drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">Romy Saray</h1>
+                <div class="w-24 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent mx-auto mt-2"></div>
+            </div>
+
+            <!-- Envelope Container with Seal Button -->
+            <div class="relative w-full flex items-center justify-center">
+                <!-- Envelope Image -->
+                <img src="https://raw.githubusercontent.com/regina1503/ROMY-MIS-XV-A-OS/main/image-Photoroom%20(13).png" alt="Sobre" class="w-full h-auto drop-shadow-2xl object-contain"/>
+                
+                <!-- Wax Seal Button lowered by 10% (top-[60%]) -->
+                <button type="button" onclick="openInvitation()" class="absolute z-20 top-[60%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[94px] sm:w-[113px] h-[94px] sm:h-[113px] focus:outline-none cursor-pointer" aria-label="Abrir invitación">
+                    <img id="sealImg" src="https://raw.githubusercontent.com/regina1503/ROMY-MIS-XV-A-OS/main/image-Photoroom%20(14).png" alt="Sello Sol" class="wax-seal-img w-full h-full object-contain"/>
+                </button>
+            </div>
+
+            <!-- Call to Action Button in White Pill lowered by 10% -->
+            <div class="mt-10 sm:mt-12 text-center animate-bounce">
+                <button type="button" onclick="openInvitation()" class="inline-flex items-center gap-2 glass-pill px-5 py-2.5 rounded-full text-amber-900 font-semibold text-sm shadow-xl hover:bg-white/90 transition-all cursor-pointer">
+                    <i class="fas fa-hand-pointer text-amber-600"></i>
+                    Toca el sello para abrir
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Music Toggle Button -->
+    <div class="fixed top-4 right-4 z-40">
+        <button id="musicToggleBtn" onclick="toggleAudio()" class="w-12 h-12 rounded-full glass-pill flex items-center justify-center text-amber-600 shadow-lg active:scale-95 transition-transform" title="Música de fondo">
+            <i id="musicIcon" class="fas fa-music text-lg"></i>
+        </button>
+    </div>
+
+    <!-- Main Invitation Stack -->
+    <main id="mainInvitation" class="relative z-10 w-full max-w-2xl mx-auto bg-white opacity-0 transition-opacity duration-1000">
+        <!-- Page 1 (alargada) -->
+        <div class="relative w-full overflow-hidden">
+            <img src="https://raw.githubusercontent.com/INVITACIONESMOMENTOSENCANTADOS/ROMY-MIS-XV-A-OS/main/ROMY_20260802_153318_0000.jpg" alt="Invitación Romy Saray Página 1" class="invitation-img" style="height:114vh; object-fit:cover; object-position:center;" />
+        </div>
+        
+        <!-- Page 2 -->
+        <img src="https://raw.githubusercontent.com/regina1503/ROMY-MIS-XV-A-OS/main/ROMY%20(1).jpg" alt="Invitación Romy Saray Página 2" class="invitation-img" />
+        
+        <!-- Page 3 -->
+        <img src="https://raw.githubusercontent.com/INVITACIONESMOMENTOSENCANTADOS/ROMY-MIS-XV-A-OS/main/26_20260802_170056_0001.jpg" alt="Invitación Romy Saray Página 3" class="invitation-img" />
+
+        <!-- Page 4 -->
+        <img src="https://raw.githubusercontent.com/regina1503/ROMY-MIS-XV-A-OS/main/ROMY%20(8).jpg" alt="Invitación Romy Saray Página 4" class="invitation-img" />
+
+        <!-- Page 5 with Custom Purple & Gold Location Button Overlay -->
+        <div class="relative w-full">
+            <img src="https://raw.githubusercontent.com/INVITACIONESMOMENTOSENCANTADOS/ROMY-MIS-XV-A-OS/main/28_20260802_170056_0002.jpg" alt="Invitación Romy Saray Página 5" class="invitation-img" />
+            
+            <!-- Google Maps Location Button -->
+            <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 w-full px-4 text-center">
+                <a href="https://www.google.com/maps/place/Parroquia+de+Nuestra+Se%C3%B1ora+del+Pilar/@21.0048189,-89.6492821,889m/data=!3m2!1e3!4b1!4m6!3m5!1s0x8f56747144d49f81:0x346c9cd54d6a5fa2!8m2!3d21.0048189!4d-89.6492821!16s%2Fg%2F1pty4csds!18m1!1e1?entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-full font-bold text-sm sm:text-base shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 border border-amber-300/70"
+                   style="background-color: #87329e; color: #ffd700;">
+                    <i class="fas fa-map-marker-alt text-lg animate-bounce" style="color: #ffd700;"></i>
+                    <span style="color: #ffd700;">Ver Ubicación</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Nueva Página agregada después de la Página 5 -->
+        <img src="https://raw.githubusercontent.com/regina1503/ROMY-MIS-XV-A-OS/main/ROMY%20(9).jpg" alt="Invitación Romy Saray Página Adicional" class="invitation-img" />
+
+        <!-- Page 7 with Custom Purple & Gold Location Button Overlay -->
+        <div class="relative w-full">
+            <img src="https://raw.githubusercontent.com/regina1503/ROMY-MIS-XV-A-OS/main/ROMY%20(7).jpg" alt="Invitación Romy Saray Página 7" class="invitation-img" />
+            
+            <!-- Google Maps Location Button for Salón Los Olivos -->
+            <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 w-full px-4 text-center">
+                <a href="https://www.google.com/maps/place/Sal%C3%B3n+de+Eventos+Los+Olivos+M%C3%A9rida/@21.0623545,-89.6667903,888m/data=!3m2!1e3!4b1!4m6!3m5!1s0x8f56750946799215:0x9288d8e23076476c!8m2!3d21.0623545!4d-89.6667903!16s%2Fg%2F11hbn_l9y3!18m1!1e1?entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-full font-bold text-sm sm:text-base shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 border border-amber-300/70"
+                   style="background-color: #87329e; color: #ffd700;">
+                    <i class="fas fa-map-marker-alt text-lg animate-bounce" style="color: #ffd700;"></i>
+                    <span style="color: #ffd700;">Ver Ubicación</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Photo Gallery Carousel Section after Page 7 -->
+        <div class="relative w-full min-h-[620px] sm:min-h-[780px] bg-cover bg-center bg-no-repeat flex flex-col justify-center items-center py-12 sm:py-16 px-4 overflow-hidden" style="background-image: url('https://raw.githubusercontent.com/regina1503/ROMY-MIS-XV-A-OS/main/ROMY%20(2).jpg');">
+            <div class="relative z-10 w-full max-w-lg flex flex-col items-center">
+                <!-- Header Badge -->
+                <div class="glass-pill px-6 py-2 rounded-full mb-6 border border-[#D4AF37]/80 shadow-lg text-center">
+                    <span class="text-amber-900 font-serif font-bold text-base sm:text-lg tracking-wider uppercase flex items-center gap-2">
+                        <i class="fas fa-camera text-[#87329e]"></i>
+                        Galería de Fotos
+                    </span>
+                </div>
+
+                <!-- Carousel Slider Container -->
+                <div class="relative w-full group">
+                    <!-- Left Navigation Arrow -->
+                    <button type="button" onclick="scrollGallery(-1)" class="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/50 hover:bg-[#87329e] text-white flex items-center justify-center transition-all border border-[#D4AF37] shadow-lg active:scale-90" aria-label="Anterior foto">
+                        <i class="fas fa-chevron-left text-base"></i>
+                    </button>
+
+                    <!-- Right Navigation Arrow -->
+                    <button type="button" onclick="scrollGallery(1)" class="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/50 hover:bg-[#87329e] text-white flex items-center justify-center transition-all border border-[#D4AF37] shadow-lg active:scale-90" aria-label="Siguiente foto">
+                        <i class="fas fa-chevron-right text-base"></i>
+                    </button>
+
+                    <!-- Horizontal Scroll Row -->
+                    <div id="gallerySlider" class="flex overflow-x-auto snap-x snap-mandatory scroll-smooth gap-4 px-2 py-2 no-scrollbar" style="scrollbar-width: none; -ms-overflow-style: none;">
+                        <div class="snap-center shrink-0 w-[88%] sm:w-[420px] h-[440px] sm:h-[530px] rounded-3xl overflow-hidden border-2 border-[#D4AF37] shadow-2xl bg-black/30">
+                            <img src="https://raw.githubusercontent.com/regina1503/ROMY-MIS-XV-A-OS/main/WhatsApp%20Image%202026-08-01%20at%203.12.50%20PM.jpeg" alt="Foto Romy 1" class="w-full h-full object-cover"/>
+                        </div>
+                        <div class="snap-center shrink-0 w-[88%] sm:w-[420px] h-[440px] sm:h-[530px] rounded-3xl overflow-hidden border-2 border-[#D4AF37] shadow-2xl bg-black/30">
+                            <img src="https://raw.githubusercontent.com/regina1503/ROMY-MIS-XV-A-OS/main/WhatsApp%20Image%202026-08-01%20at%203.14.06%20PM%20(2).jpeg" alt="Foto Romy 2" class="w-full h-full object-cover"/>
+                        </div>
+                        <div class="snap-center shrink-0 w-[88%] sm:w-[420px] h-[440px] sm:h-[530px] rounded-3xl overflow-hidden border-2 border-[#D4AF37] shadow-2xl bg-black/30">
+                            <img src="https://raw.githubusercontent.com/regina1503/ROMY-MIS-XV-A-OS/main/WhatsApp%20Image%202026-08-01%20at%203.14.06%20PM%20(3).jpeg" alt="Foto Romy 3" class="w-full h-full object-cover"/>
+                        </div>
+                        <div class="snap-center shrink-0 w-[88%] sm:w-[420px] h-[440px] sm:h-[530px] rounded-3xl overflow-hidden border-2 border-[#D4AF37] shadow-2xl bg-black/30">
+                            <img src="https://raw.githubusercontent.com/regina1503/ROMY-MIS-XV-A-OS/main/WhatsApp%20Image%202026-08-01%20at%203.14.07%20PM%20(1).jpeg" alt="Foto Romy 4" class="w-full h-full object-cover"/>
+                        </div>
+                        <div class="snap-center shrink-0 w-[88%] sm:w-[420px] h-[440px] sm:h-[530px] rounded-3xl overflow-hidden border-2 border-[#D4AF37] shadow-2xl bg-black/30">
+                            <img src="https://raw.githubusercontent.com/regina1503/ROMY-MIS-XV-A-OS/main/WhatsApp%20Image%202026-08-01%20at%203.14.07%20PM.jpeg" alt="Foto Romy 5" class="w-full h-full object-cover"/>
+                        </div>
+                        <div class="snap-center shrink-0 w-[88%] sm:w-[420px] h-[440px] sm:h-[530px] rounded-3xl overflow-hidden border-2 border-[#D4AF37] shadow-2xl bg-black/30">
+                            <img src="https://raw.githubusercontent.com/regina1503/ROMY-MIS-XV-A-OS/main/WhatsApp%20Image%202026-08-01%20at%203.14.08%20PM%20(1).jpeg" alt="Foto Romy 6" class="w-full h-full object-cover"/>
+                        </div>
+                        <div class="snap-center shrink-0 w-[88%] sm:w-[420px] h-[440px] sm:h-[530px] rounded-3xl overflow-hidden border-2 border-[#D4AF37] shadow-2xl bg-black/30">
+                            <img src="https://raw.githubusercontent.com/regina1503/ROMY-MIS-XV-A-OS/main/WhatsApp%20Image%202026-08-01%20at%203.14.10%20PM.jpeg" alt="Foto Romy 7" class="w-full h-full object-cover"/>
+                        </div>
+                        <div class="snap-center shrink-0 w-[88%] sm:w-[420px] h-[440px] sm:h-[530px] rounded-3xl overflow-hidden border-2 border-[#D4AF37] shadow-2xl bg-black/30">
+                            <img src="https://raw.githubusercontent.com/regina1503/ROMY-MIS-XV-A-OS/main/WhatsApp%20Image%202026-08-01%20at%203.14.08%20PM%20(3).jpeg" alt="Foto Romy 8" class="w-full h-full object-cover"/>
+                        </div>
+                        <div class="snap-center shrink-0 w-[88%] sm:w-[420px] h-[440px] sm:h-[530px] rounded-3xl overflow-hidden border-2 border-[#D4AF37] shadow-2xl bg-black/30">
+                            <img src="https://raw.githubusercontent.com/regina1503/ROMY-MIS-XV-A-OS/main/WhatsApp%20Image%202026-08-01%20at%203.14.09%20PM%20(2).jpeg" alt="Foto Romy 9" class="w-full h-full object-cover"/>
+                        </div>
+                        <div class="snap-center shrink-0 w-[88%] sm:w-[420px] h-[440px] sm:h-[530px] rounded-3xl overflow-hidden border-2 border-[#D4AF37] shadow-2xl bg-black/30">
+                            <img src="https://raw.githubusercontent.com/regina1503/ROMY-MIS-XV-A-OS/main/WhatsApp%20Image%202026-08-01%20at%203.14.09%20PM.jpeg" alt="Foto Romy 10" class="w-full h-full object-cover"/>
+                        </div>
+                        <div class="snap-center shrink-0 w-[88%] sm:w-[420px] h-[440px] sm:h-[530px] rounded-3xl overflow-hidden border-2 border-[#D4AF37] shadow-2xl bg-black/30">
+                            <img src="https://raw.githubusercontent.com/regina1503/ROMY-MIS-XV-A-OS/main/WhatsApp%20Image%202026-08-01%20at%203.14.08%20PM%20(2).jpeg" alt="Foto Romy 11" class="w-full h-full object-cover"/>
+                        </div>
+                        <div class="snap-center shrink-0 w-[88%] sm:w-[420px] h-[440px] sm:h-[530px] rounded-3xl overflow-hidden border-2 border-[#D4AF37] shadow-2xl bg-black/30">
+                            <img src="https://raw.githubusercontent.com/regina1503/ROMY-MIS-XV-A-OS/main/WhatsApp%20Image%202026-08-01%20at%203.14.08%20PM%20(4).jpeg" alt="Foto Romy 12" class="w-full h-full object-cover"/>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Swipe instruction -->
+                <div class="mt-4 flex items-center gap-2 text-white/95 text-xs sm:text-sm font-semibold drop-shadow-md">
+                    <i class="fas fa-[#D4AF37] fa-hand-pointer animate-bounce text-[#D4AF37]"></i>
+                    <span>Desliza a la derecha para ver más fotos</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Página: ROMY (11).jpg -->
+        <img src="https://raw.githubusercontent.com/regina1503/ROMY-MIS-XV-A-OS/main/ROMY%20(11).jpg" alt="Invitación Romy Saray Página 8" class="invitation-img" />
+
+        <!-- Página 9: reemplazada -->
+        <img src="https://raw.githubusercontent.com/INVITACIONESMOMENTOSENCANTADOS/ROMY-MIS-XV-A-OS/main/30_20260802_170058_0003.jpg" alt="Invitación Romy Saray Página 9" class="invitation-img" />
+
+        <!-- Página 10: ROMY (10).jpg con Botón de Confirmación -->
+        <div class="relative w-full">
+            <img src="https://raw.githubusercontent.com/regina1503/ROMY-MIS-XV-A-OS/main/ROMY%20(10).jpg" alt="Invitación Romy Saray Página 10" class="invitation-img" />
+            
+            <!-- Button positioned at top-[45%] (lowered 10% from top-[35%]) -->
+            <div class="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-full px-4 text-center">
+                <a href="confirmacion.html" 
+                   class="inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-full font-bold text-sm sm:text-base shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 border border-amber-300/70"
+                   style="background-color: #87329e; color: #ffd700;">
+                    <i class="fas fa-calendar-check text-lg" style="color: #ffd700;"></i>
+                    <span style="color: #ffd700;">Confirmar asistencia</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Página: ROMY (12).jpg con Cuenta Regresiva (alargada) -->
+        <div class="relative w-full overflow-hidden">
+            <img src="https://raw.githubusercontent.com/regina1503/ROMY-MIS-XV-A-OS/main/ROMY%20(12).jpg" alt="Invitación Romy Saray Página 10" class="invitation-img" style="height:108vh; object-fit:cover; object-position:center;" />
+            
+            <!-- Target Date Countdown Overlay bajado un 10% (top-[60%]) -->
+            <div class="absolute top-[60%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-11/12 max-w-md text-center">
+                <div class="p-4 sm:p-6">
+                    <div class="grid grid-cols-4 gap-2 sm:gap-3 text-center">
+                        <!-- Days Circle -->
+                        <div class="flex flex-col items-center">
+                            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-black/40 border-2 border-[#D4AF37]/70 flex items-center justify-center shadow-lg backdrop-blur-md">
+                                <span id="countdownDays" class="text-lg sm:text-2xl font-bold font-serif" style="color: #D4AF37;">00</span>
+                            </div>
+                            <span class="text-[10px] sm:text-xs font-semibold text-white uppercase tracking-wider mt-2 drop-shadow">Días</span>
+                        </div>
+                        <!-- Hours Circle -->
+                        <div class="flex flex-col items-center">
+                            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-black/40 border-2 border-[#D4AF37]/70 flex items-center justify-center shadow-lg backdrop-blur-md">
+                                <span id="countdownHours" class="text-lg sm:text-2xl font-bold font-serif" style="color: #D4AF37;">00</span>
+                            </div>
+                            <span class="text-[10px] sm:text-xs font-semibold text-white uppercase tracking-wider mt-2 drop-shadow">Hs</span>
+                        </div>
+                        <!-- Minutes Circle -->
+                        <div class="flex flex-col items-center">
+                            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-black/40 border-2 border-[#D4AF37]/70 flex items-center justify-center shadow-lg backdrop-blur-md">
+                                <span id="countdownMinutes" class="text-lg sm:text-2xl font-bold font-serif" style="color: #D4AF37;">00</span>
+                            </div>
+                            <span class="text-[10px] sm:text-xs font-semibold text-white uppercase tracking-wider mt-2 drop-shadow">Min</span>
+                        </div>
+                        <!-- Seconds Circle -->
+                        <div class="flex flex-col items-center">
+                            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-black/40 border-2 border-[#D4AF37]/70 flex items-center justify-center shadow-lg backdrop-blur-md">
+                                <span id="countdownSeconds" class="text-lg sm:text-2xl font-bold font-serif" style="color: #D4AF37;">00</span>
+                            </div>
+                            <span class="text-[10px] sm:text-xs font-semibold text-white uppercase tracking-wider mt-2 drop-shadow">Seg</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const audio = document.getElementById('bgMusic');
+        let isPlaying = false;
+
+        function scrollGallery(direction) {
+            const slider = document.getElementById('gallerySlider');
+            if (!slider) return;
+            const scrollAmount = slider.clientWidth * 0.85;
+            slider.scrollBy({
+                left: direction * scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+
+        // Countdown Timer Logic
+        function updateCountdown() {
+            const targetDate = new Date('2026-08-22T18:00:00');
+            const now = new Date();
+            const difference = targetDate - now;
+
+            const daysElem = document.getElementById('countdownDays');
+            const hoursElem = document.getElementById('countdownHours');
+            const minutesElem = document.getElementById('countdownMinutes');
+            const secondsElem = document.getElementById('countdownSeconds');
+
+            if (!daysElem || !hoursElem || !minutesElem || !secondsElem) return;
+
+            if (difference <= 0) {
+                daysElem.textContent = '00';
+                hoursElem.textContent = '00';
+                minutesElem.textContent = '00';
+                secondsElem.textContent = '00';
+                return;
+            }
+
+            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+            daysElem.textContent = String(days).padStart(2, '0');
+            hoursElem.textContent = String(hours).padStart(2, '0');
+            minutesElem.textContent = String(minutes).padStart(2, '0');
+            secondsElem.textContent = String(seconds).padStart(2, '0');
+        }
+
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+
+        function updateMusicIcon(active) {
+            const icon = document.getElementById('musicIcon');
+            if (icon) {
+                icon.className = active 
+                    ? "fas fa-volume-up text-lg text-amber-600 animate-pulse" 
+                    : "fas fa-music text-lg text-amber-600";
+            }
+        }
+
+        function openInvitation() {
+            try {
+                // Unlock body scrolling
+                document.body.classList.remove('locked');
+
+                // Fade out envelope overlay
+                const overlay = document.getElementById('envelopeOverlay');
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+
+                // Reveal main invitation images
+                const main = document.getElementById('mainInvitation');
+                main.classList.remove('opacity-0');
+                main.classList.add('opacity-100');
+
+                // Play audio starting at 5 seconds
+                if (audio) {
+                    audio.currentTime = 5;
+                    const playPromise = audio.play();
+                    if (playPromise !== undefined) {
+                        playPromise.then(() => {
+                            isPlaying = true;
+                            updateMusicIcon(true);
+                        }).catch(e => {
+                            console.log("Autoplay requires direct gesture:", e);
+                            isPlaying = false;
+                            updateMusicIcon(false);
+                        });
+                    }
+                }
+
+                // Remove envelope overlay completely after fade transition
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    initScrollObserver();
+                }, 1000);
+
+            } catch (err) {
+                console.error("Error opening invitation:", err);
+            }
+        }
+
+        function toggleAudio() {
+            if (!audio) return;
+            
+            if (isPlaying) {
+                audio.pause();
+                isPlaying = false;
+                updateMusicIcon(false);
+            } else {
+                if (audio.currentTime < 5) {
+                    audio.currentTime = 5;
+                }
+                audio.play().then(() => {
+                    isPlaying = true;
+                    updateMusicIcon(true);
+                }).catch(e => console.log("Audio play error:", e));
+            }
+        }
+
+        function initScrollObserver() {
+            const photoCards = document.querySelectorAll('.photo-card');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('reveal');
+                    }
+                });
+            }, {
+                threshold: 0.15
+            });
+
+            photoCards.forEach(card => observer.observe(card));
+        }
+
+        const canvas = document.getElementById('sparklesCanvas');
+        const ctx = canvas ? canvas.getContext('2d') : null;
+        let particles = [];
+
+        function resizeCanvas() {
+            if (!canvas) return;
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        if (canvas && ctx) {
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            class Particle {
+                constructor() {
+                    this.reset();
+                }
+                reset() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.random() * 2.2 + 0.6;
+                    this.speedY = -(Math.random() * 0.4 + 0.1);
+                    this.opacity = Math.random();
+                    this.fade = Math.random() * 0.008 + 0.003;
+                }
+                update() {
+                    this.y += this.speedY;
+                    this.opacity -= this.fade;
+                    if (this.opacity <= 0 || this.y < 0) {
+                        this.reset();
+                        this.y = canvas.height + 10;
+                        this.opacity = 1;
+                    }
+                }
+                draw() {
+                    ctx.fillStyle = `rgba(212, 175, 55, ${this.opacity * 0.85})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            for (let i = 0; i < 45; i++) {
+                particles.push(new Particle());
+            }
+
+            function animateParticles() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+                requestAnimationFrame(animateParticles);
+            }
+
+            animateParticles();
+        }
+    </script>
+</body>
+</html>
