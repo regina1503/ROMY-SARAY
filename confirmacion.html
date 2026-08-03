@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,500;0,600;1,400&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
 <!-- Firebase: guarda las confirmaciones en la nube (Firestore) para que se
      sincronicen entre todos los dispositivos, en vez de quedarse aisladas
@@ -44,11 +46,11 @@
 
 <style>
 :root{
-  --ink:#4A2C2A; --ink-soft:#8C6B63;
-  --paper:#FDF4F1; --paper-2:#FFFFFF;
-  --brass:#D4A190; --brass-dark:#B76E79; --brass-light:#F3D9CF;
-  --sage:#B76E79; --sage-dark:#8E4A54;
-  --clay:#C79A93;
+  --ink:#4A2C55; --ink-soft:#8C6B95;
+  --paper:#F8F4FC; --paper-2:#FFFFFF;
+  --brass:#B79FD4; --brass-dark:#8C6BAE; --brass-light:#E6DBF7;
+  --sage:#9B7FC7; --sage-dark:#6B4E9E;
+  --clay:#C9A8D9;
   --font-d:'Cormorant Garamond',serif; --font-b:'Work Sans',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -74,24 +76,24 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font-b);min-heig
 .screen.active{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-.card{background:var(--paper-2);border:1px solid #E5DCC8;border-radius:10px;padding:1.75rem;box-shadow:0 6px 24px rgba(32,38,31,.05)}
+.card{background:var(--paper-2);border:1px solid #E6DBF7;border-radius:10px;padding:1.75rem;box-shadow:0 6px 24px rgba(32,38,31,.05)}
 
 .field{margin-bottom:1.1rem}
 .field label{display:block;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-soft);font-weight:600;margin-bottom:6px}
 .field input[type=text],.field input[type=number],.field select,.field textarea{
-  width:100%;padding:12px 14px;border:1px solid #D9CDB0;border-radius:6px;font-family:var(--font-b);font-size:15px;background:var(--paper);color:var(--ink);outline:none;transition:border-color .2s,box-shadow .2s;
+  width:100%;padding:12px 14px;border:1px solid #D9C5EC;border-radius:6px;font-family:var(--font-b);font-size:15px;background:var(--paper);color:var(--ink);outline:none;transition:border-color .2s,box-shadow .2s;
 }
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--brass);box-shadow:0 0 0 3px rgba(169,138,60,.12)}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--brass);box-shadow:0 0 0 3px rgba(139,107,174,.15)}
 .field textarea{resize:vertical;min-height:70px}
 
 .attend-toggle{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.1rem}
-.attend-btn{padding:14px 8px;border:1px solid #D9CDB0;border-radius:6px;background:var(--paper);cursor:pointer;font-family:var(--font-b);font-size:14px;font-weight:500;color:var(--ink-soft);display:flex;flex-direction:column;align-items:center;gap:6px;transition:all .2s}
+.attend-btn{padding:14px 8px;border:1px solid #D9C5EC;border-radius:6px;background:var(--paper);cursor:pointer;font-family:var(--font-b);font-size:14px;font-weight:500;color:var(--ink-soft);display:flex;flex-direction:column;align-items:center;gap:6px;transition:all .2s}
 .attend-btn i{font-size:20px}
 .attend-btn.yes.selected{background:var(--sage);border-color:var(--sage);color:#fff}
 .attend-btn.no.selected{background:var(--clay);border-color:var(--clay);color:#fff}
 .attend-btn:hover:not(.selected){border-color:var(--brass)}
 
-.qty-row{display:flex;align-items:center;justify-content:space-between;border:1px solid #D9CDB0;border-radius:6px;padding:10px 14px;background:var(--paper)}
+.qty-row{display:flex;align-items:center;justify-content:space-between;border:1px solid #D9C5EC;border-radius:6px;padding:10px 14px;background:var(--paper)}
 .qty-row span{font-size:14px;color:var(--ink-soft);font-weight:500}
 .qty-controls{display:flex;align-items:center;gap:14px}
 .qty-btn{width:30px;height:30px;border-radius:50%;border:1px solid var(--brass);background:var(--paper-2);color:var(--brass-dark);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s}
@@ -107,22 +109,22 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font-b);min-heig
 
 /* confirmed screen */
 .result-icon{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.2rem;font-size:28px}
-.result-icon.yes{background:#E4EDDF;color:var(--sage-dark)}
-.result-icon.no{background:#F3E0DC;color:var(--clay)}
+.result-icon.yes{background:#EAE0F7;color:var(--sage-dark)}
+.result-icon.no{background:#F3E5FA;color:var(--clay)}
 .result-title{font-family:var(--font-d);font-size:26px;text-align:center;color:var(--ink);margin-bottom:6px}
 .result-sub{text-align:center;font-size:14px;color:var(--ink-soft);line-height:1.6;margin-bottom:1.5rem}
 .result-detail{display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid #EEE6D5;font-size:13px}
 .result-detail span:last-child{font-weight:600;color:var(--ink)}
 
 /* admin */
-.admin-toggle{text-align:center;margin-top:3rem;padding:1.5rem 1.5rem 0;border-top:1px solid #E5DCC8}
+.admin-toggle{text-align:center;margin-top:3rem;padding:1.5rem 1.5rem 0;border-top:1px solid #E6DBF7}
 .admin-link{font-size:11px;color:#B8AC8E;letter-spacing:1px;background:none;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-family:var(--font-b)}
 .admin-link:hover{color:var(--brass-dark)}
 .admin-box{margin-top:1.2rem}
 .admin-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:8px}
 .admin-head h3{font-family:var(--font-d);font-size:20px}
 .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.2rem}
-.stat{background:var(--paper);border:1px solid #E5DCC8;border-radius:8px;padding:.9rem .5rem;text-align:center}
+.stat{background:var(--paper);border:1px solid #E6DBF7;border-radius:8px;padding:.9rem .5rem;text-align:center}
 .stat b{display:block;font-family:var(--font-d);font-size:24px}
 .stat span{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-soft)}
 .rsvp-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #EEE6D5}
@@ -130,15 +132,15 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font-b);min-heig
 .rsvp-name{font-size:14px;font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rsvp-meta{font-size:11px;color:var(--ink-soft)}
 .pill{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:600}
-.pill.yes{background:#E4EDDF;color:var(--sage-dark)}
-.pill.no{background:#F3E0DC;color:var(--clay)}
+.pill.yes{background:#EAE0F7;color:var(--sage-dark)}
+.pill.no{background:#F3E5FA;color:var(--clay)}
 .pill.mesa{background:var(--brass-light);color:var(--brass-dark)}
-.pill.mesa.overflow{background:#F3E0DC;color:var(--clay)}
+.pill.mesa.overflow{background:#F3E5FA;color:var(--clay)}
 .del-btn{background:none;border:none;color:#C8A8A0;cursor:pointer;font-size:16px;padding:2px}
 .del-btn:hover{color:var(--clay)}
-.btn-export{font-size:12px;background:var(--paper-2);border:1px solid #D9CDB0;padding:7px 14px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:var(--font-b);font-weight:500;color:var(--ink)}
+.btn-export{font-size:12px;background:var(--paper-2);border:1px solid #D9C5EC;padding:7px 14px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:var(--font-b);font-weight:500;color:var(--ink)}
 .btn-export:hover{border-color:var(--brass)}
-.settings-note{font-size:11px;color:var(--ink-soft);background:var(--paper);border:1px dashed #D9CDB0;border-radius:6px;padding:10px 12px;margin-bottom:1rem;line-height:1.5}
+.settings-note{font-size:11px;color:var(--ink-soft);background:var(--paper);border:1px dashed #D9C5EC;border-radius:6px;padding:10px 12px;margin-bottom:1rem;line-height:1.5}
 
 /* modal */
 .modal-overlay{position:fixed;inset:0;background:rgba(32,38,31,.55);backdrop-filter:blur(3px);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
@@ -146,10 +148,10 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font-b);min-heig
 .modal-box{background:var(--paper-2);border-radius:10px;width:90%;max-width:340px;padding:1.8rem;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,.2);transform:scale(.92);transition:transform .25s}
 .modal-overlay.active .modal-box{transform:scale(1)}
 .pin-inputs{display:flex;justify-content:center;gap:10px;margin:1.3rem 0}
-.pin-digit{width:44px;height:48px;border:1px solid #D9CDB0;border-radius:6px;text-align:center;font-size:20px;font-weight:600;background:var(--paper);outline:none}
+.pin-digit{width:44px;height:48px;border:1px solid #D9C5EC;border-radius:6px;text-align:center;font-size:20px;font-weight:600;background:var(--paper);outline:none}
 .pin-digit:focus{border-color:var(--brass)}
 .modal-btns{display:flex;gap:8px;justify-content:center}
-.btn-cancel{padding:8px 16px;font-size:12px;border:1px solid #D9CDB0;border-radius:6px;background:none;cursor:pointer;color:var(--ink-soft);font-family:var(--font-b)}
+.btn-cancel{padding:8px 16px;font-size:12px;border:1px solid #D9C5EC;border-radius:6px;background:none;cursor:pointer;color:var(--ink-soft);font-family:var(--font-b)}
 .btn-ok{padding:8px 20px;font-size:12px;background:var(--ink);color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:var(--font-b);font-weight:600}
 
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(100px);opacity:0;transition:all .35s cubic-bezier(.175,.885,.32,1.275);background:var(--ink);color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;display:flex;align-items:center;gap:8px;z-index:2000;box-shadow:0 10px 25px rgba(0,0,0,.2)}
@@ -221,6 +223,15 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font-b);min-heig
       <p class="result-title" id="r-title">¡Gracias!</p>
       <p class="result-sub" id="r-sub">Tu respuesta fue registrada.</p>
       <div id="r-details"></div>
+      <div id="qr-wrapper" class="hidden" style="margin:1.2rem 0">
+        <p style="font-size:12px;color:var(--ink-soft);margin-bottom:.6rem">Muestra este código QR en la entrada del evento</p>
+        <div id="qr-code" style="display:flex;justify-content:center"></div>
+        <div id="qr-code-hd" style="display:none"></div>
+        <button type="button" class="btn-main" style="background:var(--sage-dark);margin-top:.8rem" onclick="downloadQR()">
+          <i class="ti ti-download"></i> Descargar QR (alta calidad)
+        </button>
+        <p style="font-size:11px;color:var(--ink-soft);margin-top:.6rem">Descárgalo o guarda una captura, lo necesitarás para acceder</p>
+      </div>
       <button class="btn-main" style="margin-top:1.5rem" onclick="resetForm()">Registrar otra respuesta</button>
     </div>
   </div>
@@ -264,7 +275,27 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font-b);min-heig
       <p style="font-size:11px;color:var(--ink-soft);text-align:center;margin-bottom:1rem" id="capacity-note">Capacidad: 0 / 80 personas · 8 mesas de 10</p>
       <div id="rsvp-list"></div>
 
-      <div style="margin-top:1.8rem;padding-top:1.2rem;border-top:1px solid #E5DCC8">
+      <div style="margin-top:1.8rem;padding-top:1.2rem;border-top:1px solid #E6DBF7">
+        <h3 style="font-family:var(--font-d);font-size:18px;margin-bottom:.6rem">Validar acceso (código QR)</h3>
+        <p style="font-size:11px;color:var(--ink-soft);margin-bottom:.6rem">Escanea con la cámara o pega el código leído.</p>
+        <button class="btn-main" style="background:var(--brass-dark);margin-bottom:.8rem" onclick="toggleScanner()" id="scan-btn">
+          <i class="ti ti-camera"></i> Escanear con cámara
+        </button>
+        <div id="qr-reader" class="hidden" style="width:100%;max-width:320px;margin:0 auto 1rem"></div>
+        <div class="field" style="display:flex;gap:.5rem;align-items:flex-end">
+          <input type="text" id="qr-input" placeholder="ROMY-XV|abc123|Nombre|2|Mesa 5" style="flex:1" onkeydown="if(event.key==='Enter'){validateAccess();}">
+          <button class="btn-main" style="width:auto;padding:0 1.2rem;margin:0" onclick="validateAccess()">Validar</button>
+        </div>
+        <div id="qr-result" style="margin-top:.8rem"></div>
+      </div>
+
+      <div style="margin-top:1.8rem;padding-top:1.2rem;border-top:1px solid #E6DBF7">
+        <h3 style="font-family:var(--font-d);font-size:18px;margin-bottom:.6rem"><i class="ti ti-trash" style="color:var(--clay)"></i> Papelera</h3>
+        <p style="font-size:11px;color:var(--ink-soft);margin-bottom:.8rem" id="trash-note">La papelera está vacía.</p>
+        <div id="trash-list"></div>
+      </div>
+
+      <div style="margin-top:1.8rem;padding-top:1.2rem;border-top:1px solid #E6DBF7">
         <h3 style="font-family:var(--font-d);font-size:18px;margin-bottom:.6rem">Invitados pendientes por confirmar</h3>
         <p style="font-size:11px;color:var(--ink-soft);margin-bottom:.8rem" id="pending-note"></p>
         <div id="pending-list"></div>
@@ -297,11 +328,12 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font-b);min-heig
 <div id="del-modal" class="modal-overlay">
   <div class="modal-box">
     <div style="font-size:28px;color:var(--clay);margin-bottom:6px"><i class="ti ti-trash"></i></div>
-    <h3 style="font-family:var(--font-d);font-size:19px">¿Eliminar respuesta?</h3>
-    <p style="font-size:12px;color:var(--ink-soft);margin:8px 0 16px">Esta acción no se puede deshacer.</p>
+    <h3 style="font-family:var(--font-d);font-size:19px">¿Enviar a la papelera?</h3>
+    <p style="font-size:12px;color:var(--ink-soft);margin:8px 0 12px">No se borra permanentemente: podrás restaurarla desde la papelera. Escribe <b>ELIMINAR</b> para confirmar.</p>
+    <input type="text" id="del-confirm-input" placeholder="ELIMINAR" style="width:100%;padding:10px;border:1px solid #D9C5EC;border-radius:6px;text-align:center;margin-bottom:12px;text-transform:uppercase" oninput="document.getElementById('del-confirm-btn').disabled = this.value.trim().toUpperCase()!=='ELIMINAR'">
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeDelModal()">Cancelar</button>
-      <button class="btn-ok" style="background:var(--clay)" id="del-confirm-btn">Eliminar</button>
+      <button class="btn-ok" style="background:var(--clay)" id="del-confirm-btn" disabled>Eliminar</button>
     </div>
   </div>
 </div>
@@ -334,7 +366,8 @@ const GUEST_LIST = [
   {"name":"Alex Noh Guerra","passes":1},{"name":"Cornelio Rojas","passes":1},
   {"name":"Arinory Concha","passes":1},{"name":"Leny Castillo","passes":1},
   {"name":"Nelly Pérez","passes":1},{"name":"Ysmael Pérez","passes":6},
-  {"name":"Marta Pérez","passes":4},{"name":"Marco Canché","passes":4},
+  {"name":"Marta Pérez","passes":4},{"name":"Marco Canché","passes":7},
+  {"name":"Dulce Reyes","passes":1},
   {"name":"Marcos Manzanilla","passes":3},{"name":"Henry Vera","passes":2},
   {"name":"Cesar Ku","passes":2},{"name":"Javier Sánchez","passes":2},
   {"name":"Moisés Duran","passes":2},{"name":"Pedro Montero","passes":2},
@@ -362,13 +395,17 @@ function matchGuest(name){
   if(!n) return null;
   return GUEST_LIST.find(g=>normalizeName(g.name)===n) || null;
 }
-function populateGuestDatalist(){
+function populateGuestDatalist(query){
   const dl = document.getElementById('guest-datalist');
   if(!dl) return;
-  dl.innerHTML = GUEST_LIST.map(g=>`<option value="${escapeHtml(g.name)}">`).join('');
+  if(!query || query.trim().length < 4){ dl.innerHTML = ''; return; }
+  const q = normalizeName(query);
+  const matches = GUEST_LIST.filter(g=>normalizeName(g.name).includes(q));
+  dl.innerHTML = matches.map(g=>`<option value="${escapeHtml(g.name)}">`).join('');
 }
 function updateGuestMatch(){
   const val = document.getElementById('f-name').value;
+  populateGuestDatalist(val);
   const g = matchGuest(val);
   currentGuestName = val.trim();
   currentGuestMax = g ? g.passes : 10;
@@ -403,7 +440,6 @@ async function localDelete(key){
 
 /* ═════════════ init ═════════════ */
 async function init(){
-  populateGuestDatalist();
   const useFb = await fbReady();
   if(useFb){
     try{ await initFirebase(); }
@@ -439,8 +475,22 @@ function initFirebase(){
       if(!fbUnsub){
         let first = true;
         fbUnsub = onSnapshot(collection(db, FB_RSVP_COLLECTION), snap=>{
-          rsvps = snap.docs.map(d=>d.data()).sort((a,b)=>b.ts-a.ts);
-          renderAdmin();
+          const incoming = snap.docs.map(d=>d.data()).sort((a,b)=>b.ts-a.ts);
+
+          // Protección anti falso-vacío: si Firebase reporta 0 respuestas pero
+          // ya teníamos datos cargados (o hay un respaldo local con datos),
+          // probablemente es un problema de conexión y NO una base de datos
+          // realmente vacía. En ese caso no se pisa la vista con la lista vacía.
+          if(incoming.length === 0 && (rsvps.length > 0)){
+            console.warn('Firebase devolvió 0 respuestas pero ya había datos cargados; se ignora para evitar mostrar una pérdida falsa.');
+            if(!first) showToast('Conexión inestable: mostrando el último respaldo', 'ti-wifi-off');
+          } else {
+            rsvps = incoming;
+            renderAdmin();
+            // Respaldo automático: cada vez que llegan datos nuevos, se guarda
+            // una copia local además de Firebase, por si algo falla más tarde.
+            localSet('rsvp_backup_romy_saray', JSON.stringify({ savedAt: Date.now(), rsvps })).catch(()=>{});
+          }
           if(first){ first=false; resolve(); }
         }, err=>{ console.error('Error de sincronización en tiempo real', err); if(first){ first=false; reject(err); } });
       } else {
@@ -502,6 +552,77 @@ async function loadRsvps(){
 
 function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
+let html5QrScanner = null;
+let scannerActive = false;
+
+function toggleScanner(){
+  if(scannerActive){ stopScanner(); return; }
+  const reader = document.getElementById('qr-reader');
+  reader.classList.remove('hidden');
+  document.getElementById('scan-btn').innerHTML = '<i class="ti ti-x"></i> Cerrar cámara';
+  scannerActive = true;
+
+  if(typeof Html5Qrcode === 'undefined'){
+    showToast('No se pudo cargar la cámara','ti-alert-triangle');
+    stopScanner();
+    return;
+  }
+
+  html5QrScanner = new Html5Qrcode('qr-reader');
+  html5QrScanner.start(
+    { facingMode: 'environment' },
+    { fps: 10, qrbox: { width: 220, height: 220 } },
+    (decodedText) => {
+      document.getElementById('qr-input').value = decodedText;
+      validateAccess();
+      if(navigator.vibrate) navigator.vibrate(120);
+    },
+    () => {}
+  ).catch(() => {
+    showToast('No se pudo acceder a la cámara','ti-alert-triangle');
+    stopScanner();
+  });
+}
+
+function stopScanner(){
+  if(html5QrScanner){
+    html5QrScanner.stop().then(() => {
+      html5QrScanner.clear();
+      html5QrScanner = null;
+    }).catch(() => { html5QrScanner = null; });
+  }
+  document.getElementById('qr-reader').classList.add('hidden');
+  document.getElementById('scan-btn').innerHTML = '<i class="ti ti-camera"></i> Escanear con cámara';
+  scannerActive = false;
+}
+
+function validateAccess(){
+  const raw = document.getElementById('qr-input').value.trim();
+  const resultBox = document.getElementById('qr-result');
+  if(!raw){ resultBox.innerHTML=''; return; }
+  const parts = raw.split('|');
+  if(parts[0] !== 'ROMY-XV' || parts.length < 5){
+    resultBox.innerHTML = `<div class="rsvp-row" style="border-color:var(--clay)"><span class="rsvp-name" style="color:var(--clay)"><i class="ti ti-x"></i> Código no válido</span></div>`;
+    return;
+  }
+  const id = parts[1];
+  const entry = rsvps.find(r=>r.id===id);
+  if(!entry || !entry.attending){
+    resultBox.innerHTML = `<div class="rsvp-row" style="border-color:var(--clay)"><span class="rsvp-name" style="color:var(--clay)"><i class="ti ti-x"></i> Código no encontrado o no confirmado</span></div>`;
+    return;
+  }
+  let checkedIn = [];
+  try{ checkedIn = JSON.parse(localStorage.getItem('checkedInIds')||'[]'); }catch(e){ checkedIn = []; }
+  const already = checkedIn.includes(id);
+  if(!already){ checkedIn.push(id); localStorage.setItem('checkedInIds', JSON.stringify(checkedIn)); }
+  const mesa = assignTables(rsvps.filter(r=>!r.deleted))[entry.id];
+  resultBox.innerHTML = `<div class="rsvp-row" style="border-color:${already ? 'var(--brass-dark)' : 'var(--sage-dark)'}">
+    <span class="rsvp-name">${already ? '⚠️ Ya había ingresado — ' : '✅ '}${escapeHtml(entry.name)}</span>
+    <span class="pill mesa">${entry.qty} pase${entry.qty>1?'s':''} · ${mesa ? 'Mesa '+mesa : 'Sin mesa'}</span>
+  </div>`;
+  document.getElementById('qr-input').value='';
+}
+
 /* ═════════════ form ═════════════ */
 function selectAttending(val){
   attending = val;
@@ -546,17 +667,70 @@ function showResult(entry){
   const title = document.getElementById('r-title');
   const sub = document.getElementById('r-sub');
   const details = document.getElementById('r-details');
+  const qrWrapper = document.getElementById('qr-wrapper');
+  const qrBox = document.getElementById('qr-code');
+  qrBox.innerHTML = '';
   if(entry.attending){
     icon.className = 'result-icon yes'; icon.innerHTML = '<i class="ti ti-check"></i>';
     title.textContent = '¡Gracias, ' + entry.name.split(' ')[0] + '!';
     sub.textContent = 'Tu asistencia quedó confirmada. ¡Te esperamos!';
-    details.innerHTML = `<div class="result-detail"><span>Personas</span><span>${entry.qty}</span></div>`;
+    const tableOf = assignTables(rsvps.filter(r=>!r.deleted));
+    const mesa = tableOf[entry.id];
+    details.innerHTML = `
+      <div class="result-detail"><span>Personas</span><span>${entry.qty}</span></div>
+      <div class="result-detail"><span>Mesa asignada</span><span>${mesa ? 'Mesa ' + mesa : 'Por confirmar'}</span></div>
+    `;
+    qrWrapper.classList.remove('hidden');
+    const qrPayload = `ROMY-XV|${entry.id}|${entry.name}|${entry.qty}|Mesa ${mesa||'?'}`;
+    window.currentQrName = entry.name;
+    try{
+      if(typeof QRCode === 'undefined') throw new Error('QRCode no disponible');
+      new QRCode(qrBox, {
+        text: qrPayload,
+        width: 180,
+        height: 180,
+        colorDark: '#4A2C55',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+      // Versión en alta resolución (para descarga sin pixelarse)
+      const hdBox = document.getElementById('qr-code-hd');
+      hdBox.innerHTML = '';
+      new QRCode(hdBox, {
+        text: qrPayload,
+        width: 720,
+        height: 720,
+        colorDark: '#4A2C55',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    } catch(err){
+      qrBox.innerHTML = `<p style="font-size:12px;color:var(--clay)">No se pudo generar el QR. Guarda una captura de esta pantalla y muestra tu nombre en la entrada; el anfitrión podrá ubicarte por nombre.</p>`;
+    }
   } else {
     icon.className = 'result-icon no'; icon.innerHTML = '<i class="ti ti-heart-off"></i>';
     title.textContent = 'Lamentamos que no puedas ir';
     sub.textContent = 'Registramos tu respuesta. ¡Gracias por avisarnos!';
     details.innerHTML = '';
+    qrWrapper.classList.add('hidden');
   }
+}
+
+function downloadQR(){
+  const hdBox = document.getElementById('qr-code-hd');
+  const canvas = hdBox.querySelector('canvas');
+  const img = hdBox.querySelector('img');
+  let dataUrl = null;
+  if(canvas) dataUrl = canvas.toDataURL('image/png');
+  else if(img) dataUrl = img.src;
+  if(!dataUrl){ showToast('El QR aún no está listo, intenta de nuevo','ti-alert-triangle'); return; }
+  const a = document.createElement('a');
+  a.href = dataUrl;
+  const safeName = (window.currentQrName||'invitado').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'-');
+  a.download = `QR-Romy-Saray-${safeName}.png`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 function resetForm(){
@@ -606,6 +780,7 @@ function verifyPin(){
 }
 function logoutAdmin(){
   isAdminUnlocked = false;
+  if(scannerActive) stopScanner();
   document.getElementById('admin-section').classList.add('hidden');
   document.getElementById('admin-lock-icon').className = 'ti ti-lock';
   showToast('Sesión cerrada','ti-lock');
@@ -649,16 +824,18 @@ function assignTables(list){
 }
 
 function renderAdmin(){
-  const total = rsvps.length;
-  const confirmedPax = rsvps.filter(r=>r.attending).reduce((s,r)=>s+(r.qty||0),0);
-  const declined = rsvps.filter(r=>!r.attending).length;
+  const active = rsvps.filter(r=>!r.deleted);
+  const trashed = rsvps.filter(r=>r.deleted);
+  const total = active.length;
+  const confirmedPax = active.filter(r=>r.attending).reduce((s,r)=>s+(r.qty||0),0);
+  const declined = active.filter(r=>!r.attending).length;
   document.getElementById('stat-total').textContent = total;
   document.getElementById('stat-confirmed').textContent = confirmedPax;
   document.getElementById('stat-declined').textContent = declined;
   document.getElementById('capacity-note').textContent =
     `Capacidad: ${confirmedPax} / ${TOTAL_CAPACITY} personas · ${TABLE_COUNT} mesas de ${TABLE_CAPACITY}`;
 
-  const respondedNames = new Set(rsvps.map(r=>normalizeName(r.name)));
+  const respondedNames = new Set(active.map(r=>normalizeName(r.name)));
   const pending = GUEST_LIST.filter(g=>!respondedNames.has(normalizeName(g.name)));
   const pendingPasses = pending.reduce((s,g)=>s+g.passes,0);
   document.getElementById('pending-note').textContent =
@@ -673,47 +850,93 @@ function renderAdmin(){
     </div>`).join('');
   }
 
-  const tableOf = assignTables(rsvps);
+  const tableOf = assignTables(active);
 
   const list = document.getElementById('rsvp-list');
-  if(!rsvps.length){
+  if(!active.length){
     list.innerHTML = '<p style="text-align:center;font-size:13px;color:var(--ink-soft);padding:1.5rem 0;font-style:italic">Aún no hay respuestas registradas.</p>';
-    return;
+  } else {
+    list.innerHTML = active.map(r=>{
+      let mesaBadge = '';
+      if(r.attending){
+        const t = tableOf[r.id];
+        mesaBadge = t
+          ? `<span class="pill mesa">Mesa ${t}</span>`
+          : `<span class="pill mesa overflow">Sin mesa</span>`;
+      }
+      return `<div class="rsvp-row">
+        <div style="flex:1;min-width:0">
+          <span class="rsvp-name">${escapeHtml(r.name)}</span>
+          ${(!r.attending && r.message) ? `<br><span class="rsvp-meta">${escapeHtml(r.message)}</span>` : ''}
+        </div>
+        <span class="pill ${r.attending?'yes':'no'}">${r.attending?'Asiste':'No asiste'}</span>
+        <span class="rsvp-meta" style="white-space:nowrap">${r.attending?`${r.qty} persona${r.qty>1?'s':''}`:''}</span>
+        ${mesaBadge}
+        <button class="del-btn" onclick="promptDelete('${r.id}')"><i class="ti ti-trash"></i></button>
+      </div>`;
+    }).join('');
   }
-  list.innerHTML = rsvps.map(r=>{
-    let mesaBadge = '';
-    if(r.attending){
-      const t = tableOf[r.id];
-      mesaBadge = t
-        ? `<span class="pill mesa">Mesa ${t}</span>`
-        : `<span class="pill mesa overflow">Sin mesa</span>`;
+
+  const trashList = document.getElementById('trash-list');
+  const trashNote = document.getElementById('trash-note');
+  if(trashList){
+    if(!trashed.length){
+      trashNote.textContent = 'La papelera está vacía.';
+      trashList.innerHTML = '';
+    } else {
+      trashNote.textContent = `${trashed.length} respuesta${trashed.length>1?'s':''} en la papelera. Puedes restaurarlas o borrarlas para siempre.`;
+      trashList.innerHTML = trashed.map(r=>`<div class="rsvp-row">
+        <div style="flex:1;min-width:0">
+          <span class="rsvp-name">${escapeHtml(r.name)}</span>
+        </div>
+        <span class="pill ${r.attending?'yes':'no'}">${r.attending?'Asiste':'No asiste'}</span>
+        <button class="btn-export" style="border-color:var(--sage-dark);color:var(--sage-dark)" onclick="restoreRsvp('${r.id}')"><i class="ti ti-rotate-clockwise"></i> Restaurar</button>
+        <button class="del-btn" onclick="promptPermanentDelete('${r.id}')" title="Borrar para siempre"><i class="ti ti-trash-x"></i></button>
+      </div>`).join('');
     }
-    return `<div class="rsvp-row">
-      <div style="flex:1;min-width:0">
-        <span class="rsvp-name">${escapeHtml(r.name)}</span>
-        ${(!r.attending && r.message) ? `<br><span class="rsvp-meta">${escapeHtml(r.message)}</span>` : ''}
-      </div>
-      <span class="pill ${r.attending?'yes':'no'}">${r.attending?'Asiste':'No asiste'}</span>
-      <span class="rsvp-meta" style="white-space:nowrap">${r.attending?`${r.qty} persona${r.qty>1?'s':''}`:''}</span>
-      ${mesaBadge}
-      <button class="del-btn" onclick="promptDelete('${r.id}')"><i class="ti ti-trash"></i></button>
-    </div>`;
-  }).join('');
+  }
 }
 
 function promptDelete(id){
   deleteTargetId = id;
+  document.getElementById('del-confirm-input').value = '';
+  document.getElementById('del-confirm-btn').disabled = true;
   document.getElementById('del-modal').classList.add('active');
   document.getElementById('del-confirm-btn').onclick = executeDelete;
 }
 function closeDelModal(){ document.getElementById('del-modal').classList.remove('active'); deleteTargetId=null; }
+
+// Borrado SUAVE: la respuesta se marca como eliminada y se guarda en la
+// "papelera" en vez de borrarse de verdad, para poder recuperarla si fue
+// un error. Solo se puede borrar de forma permanente desde la papelera.
 async function executeDelete(){
   if(!deleteTargetId) return;
-  rsvps = rsvps.filter(r=>r.id!==deleteTargetId);
-  await deleteRsvpRemote(deleteTargetId);
+  const entry = rsvps.find(r=>r.id===deleteTargetId);
+  if(entry){ entry.deleted = true; entry.deletedAt = Date.now(); }
+  await saveRsvpRemote(entry);
   renderAdmin();
   closeDelModal();
-  showToast('Respuesta eliminada','ti-trash');
+  showToast('Movida a la papelera','ti-trash');
+}
+
+async function restoreRsvp(id){
+  const entry = rsvps.find(r=>r.id===id);
+  if(!entry) return;
+  entry.deleted = false;
+  delete entry.deletedAt;
+  await saveRsvpRemote(entry);
+  renderAdmin();
+  showToast('Respuesta restaurada','ti-rotate-clockwise');
+}
+
+function promptPermanentDelete(id){
+  const entry = rsvps.find(r=>r.id===id);
+  if(!entry) return;
+  if(!confirm(`Esto borrará PERMANENTEMENTE la respuesta de "${entry.name}". Esta acción ya no se puede deshacer. ¿Continuar?`)) return;
+  rsvps = rsvps.filter(r=>r.id!==id);
+  deleteRsvpRemote(id);
+  renderAdmin();
+  showToast('Eliminada permanentemente','ti-trash-x');
 }
 
 function exportCSV(){
