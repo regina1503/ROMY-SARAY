@@ -89,6 +89,41 @@
         }
     </style>
 </head>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDwqP4Wh7LXG5ehOnR6m_mcfaNRw92NnNg",
+    authDomain: "romy-mis-xv.firebaseapp.com",
+    projectId: "romy-mis-xv",
+    storageBucket: "romy-mis-xv.firebasestorage.app",
+    messagingSenderId: "1031057025091",
+    appId: "1:1031057025091:web:c3ac06e74922a7113fccf6",
+    measurementId: "G-TZ45RJ0YZR"
+  };
+
+  function normalizeName(s){
+    return (s||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ');
+  }
+
+  window.__guestGate = { list: null, ready: false };
+
+  (async () => {
+    try{
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+      const gDoc = await getDoc(doc(db, 'config', 'guestlist_destiny'));
+      window.__guestGate.list = (gDoc.exists() && Array.isArray(gDoc.data().guests)) ? gDoc.data().guests : [];
+    } catch(e){
+      console.error('No se pudo cargar la lista de invitados para verificar el acceso.', e);
+      window.__guestGate.list = null; // null = no se pudo verificar (error de red/config)
+    }
+    window.__guestGate.ready = true;
+    window.__guestGate.normalizeName = normalizeName;
+    if(window.__onGuestGateReady) window.__onGuestGateReady();
+  })();
+</script>
 <body class="min-h-full select-none relative text-gray-800 bg-white locked">
 
     <!-- Audio Element with Tangled song -->
@@ -101,9 +136,27 @@
 
     <!-- Envelope Screen Overlay with ROMY (4).jpg background -->
     <div id="envelopeOverlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-1000 bg-cover bg-center bg-no-repeat" style="background-image: url('https://raw.githubusercontent.com/regina1503/ROMY-MIS-XV-A-OS/main/ROMY%20(4).jpg');">
-        
-        <!-- Envelope Wrapper (Reduced size by 5%) -->
-        <div id="envelopeWrapper" class="relative z-10 w-[85%] max-w-[380px] flex flex-col items-center">
+
+        <!-- Pantalla de verificación de nombre: solo los invitados de la lista pueden ver la invitación -->
+        <div id="nameGateScreen" class="relative z-10 w-[88%] max-w-[360px] flex flex-col items-center text-center">
+            <p class="text-white text-xs sm:text-sm tracking-[0.3em] uppercase font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Mis XV Años</p>
+            <h1 class="text-2xl sm:text-3xl font-serif font-bold text-white mt-1 tracking-wide drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] mb-6">Romy Saray</h1>
+
+            <div class="w-full glass-pill rounded-2xl p-5 sm:p-6">
+                <p class="text-amber-900 font-semibold text-sm mb-3">Escribe tu nombre para ver tu invitación</p>
+                <input type="text" id="gateNameInput" list="gateGuestDatalist" placeholder="Tu nombre completo" autocomplete="off" oninput="updateGateSuggestions()" onkeydown="if(event.key==='Enter'){checkGuestName();}"
+                       class="w-full px-4 py-3 rounded-full border border-amber-300 text-center text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-amber-400 mb-3">
+                <datalist id="gateGuestDatalist"></datalist>
+                <button type="button" onclick="checkGuestName()" id="gateSubmitBtn"
+                        class="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full font-bold text-sm shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
+                        style="background-color:#87329e;color:#ffd700">
+                    <i class="fas fa-envelope-open-text"></i> Ver mi invitación
+                </button>
+                <p id="gateMessage" class="text-xs mt-3 hidden"></p>
+            </div>
+        </div>
+
+        <div id="envelopeWrapper" class="relative z-10 w-[85%] max-w-[380px] flex flex-col items-center hidden">
             
             <!-- Title Header in Bright White moved higher up -->
             <div class="text-center mb-6 -translate-y-20 sm:-translate-y-28">
@@ -349,6 +402,74 @@
     <script>
         const audio = document.getElementById('bgMusic');
         let isPlaying = false;
+
+        // ═══ Verificación de invitado: solo quienes están en la lista pueden ver la invitación ═══
+        function normalizeGateName(s){
+            if(window.__guestGate && window.__guestGate.normalizeName) return window.__guestGate.normalizeName(s);
+            return (s||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ');
+        }
+
+        // Sugerencias de nombre solo a partir de la 4ª letra escrita, igual
+        // que en la página de confirmación.
+        function updateGateSuggestions(){
+            const dl = document.getElementById('gateGuestDatalist');
+            const val = document.getElementById('gateNameInput').value;
+            if(!dl) return;
+            if(!window.__guestGate || !window.__guestGate.list || val.trim().length < 4){ dl.innerHTML = ''; return; }
+            const q = normalizeGateName(val);
+            const matches = window.__guestGate.list.filter(g => normalizeGateName(g.name).includes(q));
+            dl.innerHTML = matches.map(g => `<option value="${g.name.replace(/"/g,'&quot;')}">`).join('');
+        }
+
+        function setGateMessage(text, isError){
+            const msg = document.getElementById('gateMessage');
+            msg.textContent = text;
+            msg.className = 'text-xs mt-3 ' + (isError ? 'text-red-100 font-semibold' : 'text-amber-900');
+            msg.classList.remove('hidden');
+        }
+
+        function checkGuestName(){
+            const btn = document.getElementById('gateSubmitBtn');
+            const nameInput = document.getElementById('gateNameInput');
+            const name = nameInput.value.trim();
+            if(!name){ setGateMessage('Escribe tu nombre para continuar.', true); return; }
+
+            if(!window.__guestGate || !window.__guestGate.ready){
+                btn.disabled = true;
+                setGateMessage('Verificando, espera un momento...', false);
+                setTimeout(checkGuestName, 400);
+                return;
+            }
+            btn.disabled = false;
+
+            if(window.__guestGate.list === null){
+                setGateMessage('No se pudo verificar la lista en este momento. Revisa tu conexión e intenta de nuevo.', true);
+                return;
+            }
+
+            const target = normalizeGateName(name);
+            const found = window.__guestGate.list.some(g => normalizeGateName(g.name) === target);
+
+            if(found){
+                sessionStorage.setItem('romy_guest_name', name);
+                document.getElementById('nameGateScreen').classList.add('hidden');
+                document.getElementById('envelopeWrapper').classList.remove('hidden');
+            } else {
+                setGateMessage('Lo sentimos, tu nombre no está en la lista de invitados.', true);
+            }
+        }
+
+        // Si ya se validó antes en esta misma pestaña, no se vuelve a pedir el nombre
+        (function tryAutoUnlockGate(){
+            const saved = sessionStorage.getItem('romy_guest_name');
+            if(!saved) return;
+            window.__onGuestGateReady = function(){
+                if(window.__guestGate.list && window.__guestGate.list.some(g => normalizeGateName(g.name) === normalizeGateName(saved))){
+                    document.getElementById('nameGateScreen').classList.add('hidden');
+                    document.getElementById('envelopeWrapper').classList.remove('hidden');
+                }
+            };
+        })();
 
         function scrollGallery(direction) {
             const slider = document.getElementById('gallerySlider');
