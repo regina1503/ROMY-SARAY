@@ -9,6 +9,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,500;0,600;1,400&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+  // Respaldo: si cdnjs no cargó la librería del QR (bloqueado, sin señal, etc.),
+  // se intenta cargar la misma librería desde otro servidor.
+  window.addEventListener('DOMContentLoaded', function(){
+    if(typeof QRCode === 'undefined'){
+      var s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';
+      document.head.appendChild(s);
+    }
+  });
+</script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
 <!-- Firebase: guarda las confirmaciones en la nube (Firestore) para que se
@@ -338,6 +349,13 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font-b);min-heig
       </div>
 
       <div style="margin-top:1.8rem;padding-top:1.2rem;border-top:1px solid #E6DBF7">
+        <h3 style="font-family:var(--font-d);font-size:18px;margin-bottom:.6rem"><i class="ti ti-qrcode" style="color:var(--sage-dark)"></i> Pases QR de hoy</h3>
+        <p style="font-size:11px;color:var(--ink-soft);margin-bottom:.8rem">Solo los confirmados el día de hoy. Toca el suyo, toma captura o descarga y envíasela por WhatsApp.</p>
+        <button class="btn-main" style="background:var(--sage-dark)" id="qr-gallery-btn" onclick="toggleQrGallery()"><i class="ti ti-qrcode"></i> Mostrar QR de hoy</button>
+        <div id="qr-gallery" class="hidden" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:1rem"></div>
+      </div>
+
+      <div style="margin-top:1.8rem;padding-top:1.2rem;border-top:1px solid #E6DBF7">
         <h3 style="font-family:var(--font-d);font-size:18px;margin-bottom:.6rem"><i class="ti ti-trash" style="color:var(--clay)"></i> Papelera</h3>
         <p style="font-size:11px;color:var(--ink-soft);margin-bottom:.8rem" id="trash-note">La papelera está vacía.</p>
         <div id="trash-list"></div>
@@ -394,6 +412,18 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font-b);min-heig
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeDelModal()">Cancelar</button>
       <button class="btn-ok" style="background:var(--clay)" id="del-confirm-btn">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN QR VIEW MODAL -->
+<div id="admin-qr-modal" class="modal-overlay">
+  <div class="modal-box">
+    <p style="font-family:var(--font-d);font-size:19px;color:var(--ink);margin-bottom:2px" id="admin-qr-name">—</p>
+    <p style="font-size:12px;color:var(--ink-soft);margin-bottom:10px" id="admin-qr-qty">—</p>
+    <div id="admin-qr-box" style="display:flex;justify-content:center;padding:10px;background:#fff;border-radius:12px;margin:0 auto 12px;width:190px"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeAdminQrModal()">Cerrar</button>
     </div>
   </div>
 </div>
@@ -848,6 +878,111 @@ async function submitRSVP(){
   showResult(entry);
 }
 
+// Genera el QR dentro de `box`. Si la librería aún no ha terminado de
+// cargar (puede tardar en conexiones lentas), reintenta varias veces antes
+// de mostrar un aviso — así se evita el "espacio vacío" silencioso.
+// Permite al anfitrión volver a ver/mostrar el QR de cualquier invitado ya
+// confirmado, por si perdió su captura de pantalla original.
+// Muestra/oculta la galería con el QR de cada invitado confirmado, para
+// que el anfitrión pueda compartírselos uno por uno por WhatsApp.
+let qrGalleryOpen = false;
+function toggleQrGallery(){
+  qrGalleryOpen = !qrGalleryOpen;
+  const box = document.getElementById('qr-gallery');
+  const btn = document.getElementById('qr-gallery-btn');
+  if(qrGalleryOpen){
+    box.classList.remove('hidden');
+    btn.innerHTML = '<i class="ti ti-eye-off"></i> Ocultar QR';
+    renderQrGallery();
+  } else {
+    box.classList.add('hidden');
+    btn.innerHTML = '<i class="ti ti-qrcode"></i> Mostrar QR de hoy';
+  }
+}
+
+function renderQrGallery(){
+  const box = document.getElementById('qr-gallery');
+  if(!box || !qrGalleryOpen) return;
+  const startOfToday = new Date();
+  startOfToday.setHours(0,0,0,0);
+  const confirmed = rsvps
+    .filter(r=>!r.deleted && r.attending && r.ts >= startOfToday.getTime())
+    .sort((a,b)=>b.ts-a.ts);
+  if(!confirmed.length){
+    box.innerHTML = '<p style="grid-column:1/-1;text-align:center;font-size:13px;color:var(--ink-soft);font-style:italic;padding:.8rem 0">Nadie ha confirmado hoy todavía.</p>';
+    return;
+  }
+  box.innerHTML = confirmed.map(r => `
+    <div style="text-align:center;background:#fff;border:1px solid #E6DBF7;border-radius:12px;padding:8px;cursor:pointer" onclick="showAdminQr('${r.id}')">
+      <div id="qr-thumb-${r.id}" style="width:100px;height:100px;margin:0 auto"></div>
+      <p style="font-size:11px;font-weight:600;color:var(--ink);margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(r.name)}</p>
+      <p style="font-size:10px;color:var(--ink-soft)">${r.qty} pase${r.qty>1?'s':''}</p>
+    </div>
+  `).join('');
+  confirmed.forEach(r => {
+    const thumb = document.getElementById(`qr-thumb-${r.id}`);
+    if(thumb) generateQrInto(thumb, `ROMY-XV|${r.id}|${r.name}|${r.qty}`, 0, 100);
+  });
+}
+
+function showAdminQr(id){
+  const entry = rsvps.find(r=>r.id===id);
+  if(!entry || !entry.attending) return;
+  document.getElementById('admin-qr-name').textContent = entry.name;
+  document.getElementById('admin-qr-qty').textContent = `${entry.qty} pase${entry.qty>1?'s':''} confirmado${entry.qty>1?'s':''}`;
+  const box = document.getElementById('admin-qr-box');
+  box.innerHTML = '';
+  const qrPayload = `ROMY-XV|${entry.id}|${entry.name}|${entry.qty}`;
+  generateQrInto(box, qrPayload, 0);
+  document.getElementById('admin-qr-modal').classList.add('active');
+}
+
+function closeAdminQrModal(){
+  document.getElementById('admin-qr-modal').classList.remove('active');
+}
+
+function generateQrInto(box, payload, attempt, displaySize){
+  displaySize = displaySize || 170;
+  if(typeof QRCode === 'undefined'){
+    if(attempt < 10){
+      setTimeout(() => generateQrInto(box, payload, attempt + 1, displaySize), 300);
+      return;
+    }
+    box.innerHTML = `<div style="padding:14px;border:2px dashed var(--clay);border-radius:10px;text-align:center">
+      <i class="ti ti-alert-triangle" style="font-size:22px;color:var(--clay)"></i>
+      <p style="font-size:13px;color:var(--ink);font-weight:600;margin-top:6px">No se pudo generar el código QR</p>
+      <p style="font-size:12px;color:var(--ink-soft);margin-top:4px">Guarda una captura de esta pantalla y muestra tu nombre en la entrada.</p>
+    </div>`;
+    return;
+  }
+  try{
+    box.innerHTML = '';
+    // Se genera un solo QR ya en alta resolución (720x720 px reales) y se
+    // achica solo visualmente con CSS al tamaño que se necesite mostrar. Así
+    // se ve nítido en pantalla, en la captura del pase y al hacer zoom, sin
+    // depender de intercambios ni de generar un segundo QR aparte.
+    new QRCode(box, {
+      text: payload,
+      width: 720,
+      height: 720,
+      colorDark: '#4A2C55',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+    const qrCanvas = box.querySelector('canvas');
+    const qrImg = box.querySelector('img');
+    if(qrCanvas){ qrCanvas.style.width = displaySize + 'px'; qrCanvas.style.height = displaySize + 'px'; qrCanvas.style.display = 'block'; }
+    if(qrImg){ qrImg.style.width = displaySize + 'px'; qrImg.style.height = displaySize + 'px'; qrImg.style.display = qrCanvas ? 'none' : 'block'; }
+  } catch(err){
+    console.error('Error generando el QR', err);
+    box.innerHTML = `<div style="padding:14px;border:2px dashed var(--clay);border-radius:10px;text-align:center">
+      <i class="ti ti-alert-triangle" style="font-size:22px;color:var(--clay)"></i>
+      <p style="font-size:13px;color:var(--ink);font-weight:600;margin-top:6px">No se pudo generar el código QR</p>
+      <p style="font-size:12px;color:var(--ink-soft);margin-top:4px">Guarda una captura de esta pantalla y muestra tu nombre en la entrada.</p>
+    </div>`;
+  }
+}
+
 function showResult(entry){
   document.getElementById('screen-form').classList.remove('active');
   document.getElementById('screen-result').classList.add('active');
@@ -873,28 +1008,7 @@ function showResult(entry){
 
     const qrPayload = `ROMY-XV|${entry.id}|${entry.name}|${entry.qty}`;
     window.currentQrName = entry.name;
-    try{
-      if(typeof QRCode === 'undefined') throw new Error('QRCode no disponible');
-      // Se genera un solo QR ya en alta resolución (720x720 px reales) y se
-      // achica solo visualmente con CSS a 170px. Así se ve nítido en pantalla,
-      // en la captura del pase y al hacer zoom, sin depender de intercambios
-      // ni de generar un segundo QR aparte (que era la causa de que a veces
-      // no apareciera al descargar el pase).
-      new QRCode(qrBox, {
-        text: qrPayload,
-        width: 720,
-        height: 720,
-        colorDark: '#4A2C55',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.H
-      });
-      const qrCanvas = qrBox.querySelector('canvas');
-      const qrImg = qrBox.querySelector('img');
-      if(qrCanvas){ qrCanvas.style.width = '170px'; qrCanvas.style.height = '170px'; qrCanvas.style.display = 'block'; }
-      if(qrImg){ qrImg.style.width = '170px'; qrImg.style.height = '170px'; qrImg.style.display = qrCanvas ? 'none' : 'block'; }
-    } catch(err){
-      qrBox.innerHTML = `<p style="font-size:12px;color:var(--clay)">No se pudo generar el QR. Guarda una captura de esta pantalla y muestra tu nombre en la entrada; el anfitrión podrá ubicarte por nombre.</p>`;
-    }
+    generateQrInto(qrBox, qrPayload, 0);
   } else {
     icon.className = 'result-icon no'; icon.innerHTML = '<i class="ti ti-heart-off"></i>';
     title.textContent = 'Lamentamos que no puedas ir';
@@ -1045,6 +1159,9 @@ function renderAdmin(){
       const checkinBadge = r.checkedIn
         ? `<span class="pill yes"><i class="ti ti-door-enter"></i> Ingresó ${new Date(r.checkedInAt).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})}</span>`
         : (r.attending ? `<span class="pill no">Aún no ingresa</span>` : '');
+      const qrBtn = r.attending
+        ? `<button class="btn-export" style="border-color:var(--sage-dark);color:var(--sage-dark)" onclick="showAdminQr('${r.id}')"><i class="ti ti-qrcode"></i> Ver QR</button>`
+        : '';
       return `<div class="rsvp-row">
         <div style="flex:1;min-width:0">
           <span class="rsvp-name">${escapeHtml(r.name)}</span>
@@ -1054,6 +1171,7 @@ function renderAdmin(){
         <span class="rsvp-meta" style="white-space:nowrap">${r.attending?`${r.qty} persona${r.qty>1?'s':''}`:''}</span>
         ${mesaBadge}
         ${checkinBadge}
+        ${qrBtn}
         <button class="del-btn" onclick="promptDelete('${r.id}')"><i class="ti ti-trash"></i></button>
       </div>`;
     }).join('');
@@ -1077,6 +1195,8 @@ function renderAdmin(){
       </div>`).join('');
     }
   }
+
+  if(qrGalleryOpen) renderQrGallery();
 }
 
 /* ═════════════ Edición de la lista de invitados (nombre y pases) ═════════════ */
